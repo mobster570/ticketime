@@ -23,6 +23,9 @@ dist-ssr
 *.sln
 *.sw?
 
+# Docs
+docs/
+
 # Rust / Tauri
 src-tauri/target/
 
