@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ticketime | High-Precision Event Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#136dec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101822",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        .tabular-nums {
+            font-variant-numeric: tabular-nums;
+        }
+        .time-gradient {
+            background: linear-gradient(135deg, rgba(19, 109, 236, 0.1) 0%, rgba(19, 109, 236, 0.05) 100%);
+        }
+        .pulse-primary {
+            box-shadow: 0 0 0 0 rgba(19, 109, 236, 0.4);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(19, 109, 236, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(19, 109, 236, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(19, 109, 236, 0); }
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+<!-- Navigation / Top Bar -->
+<nav class="border-b border-primary/10 bg-white/50 dark:bg-background-dark/50 backdrop-blur-md sticky top-0 z-50">
+<div class="max-w-[1600px] mx-auto px-6 h-16 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 bg-primary rounded flex items-center justify-center">
+<span class="material-icons-round text-white text-xl">timer</span>
+</div>
+<span class="text-xl font-bold tracking-tight">TICKETime</span>
+<div class="ml-6 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+<span class="text-xs font-medium text-emerald-500 uppercase tracking-wider tabular-nums">Synced: -0.002ms</span>
+</div>
+</div>
+<!-- Global High-Precision Clock -->
+<div class="flex flex-col items-center">
+<div class="text-2xl font-bold tabular-nums tracking-tighter flex items-baseline">
+                    14:55:28<span class="text-primary">.492</span>
+</div>
+<div class="text-[10px] uppercase tracking-[0.2em] text-slate-500 font-medium">UTC+0 Server Time</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 hover:bg-primary/10 rounded transition-colors text-slate-400">
+<span class="material-icons-round">settings</span>
+</button>
+<div class="h-8 w-[1px] bg-primary/20"></div>
+<div class="flex items-center gap-3">
+<div class="text-right hidden sm:block">
+<div class="text-xs font-bold leading-none">Admin-01</div>
+<div class="text-[10px] text-slate-500">Enterprise Node</div>
+</div>
+<div class="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+<span class="material-icons-round text-primary">dns</span>
+</div>
+</div>
+</div>
+</div>
+</nav>
+<main class="max-w-[1600px] mx-auto p-6 grid grid-cols-12 gap-6">
+<!-- Left Sidebar: Server Status & Quick Actions -->
+<aside class="col-span-12 lg:col-span-3 space-y-6">
+<div class="bg-white dark:bg-white/5 p-5 rounded-xl border border-primary/10">
+<h3 class="text-xs font-bold uppercase tracking-widest text-slate-500 mb-4">Quick Stats</h3>
+<div class="space-y-4">
+<div class="flex justify-between items-center">
+<span class="text-sm text-slate-400">Network Latency</span>
+<span class="text-sm font-bold tabular-nums">12ms</span>
+</div>
+<div class="w-full bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[15%]"></div>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-sm text-slate-400">Jitter</span>
+<span class="text-sm font-bold tabular-nums">0.04ms</span>
+</div>
+<div class="w-full bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
+<div class="bg-emerald-500 h-full w-[5%]"></div>
+</div>
+</div>
+</div>
+<div class="bg-white dark:bg-white/5 rounded-xl border border-primary/10 overflow-hidden">
+<div class="p-4 border-b border-primary/10 flex justify-between items-center">
+<h3 class="text-xs font-bold uppercase tracking-widest text-slate-500">Node Cluster</h3>
+<span class="material-icons-round text-primary text-sm">refresh</span>
+</div>
+<div class="divide-y divide-primary/5">
+<div class="p-4 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="material-icons-round text-emerald-500 text-sm">circle</span>
+<span class="text-sm font-medium">US-EAST-1</span>
+</div>
+<span class="text-[10px] tabular-nums text-slate-500">14ms</span>
+</div>
+<div class="p-4 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="material-icons-round text-emerald-500 text-sm">circle</span>
+<span class="text-sm font-medium">EU-WEST-2</span>
+</div>
+<span class="text-[10px] tabular-nums text-slate-500">38ms</span>
+</div>
+<div class="p-4 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="material-icons-round text-amber-500 text-sm">circle</span>
+<span class="text-sm font-medium">AP-SOUTH-1</span>
+</div>
+<span class="text-[10px] tabular-nums text-slate-500">112ms</span>
+</div>
+</div>
+</div>
+<div class="relative rounded-xl overflow-hidden h-48 border border-primary/10">
+<img class="object-cover w-full h-full opacity-40" data-alt="Dark abstract visualization of data nodes and server connections" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBjOCgnQ9VxmvgrxwwXswgRGljdn0LWtU6FVbk81_2WHKpEVP2qRhdsE9lf4QfwSkNj7XzLCGse04YDOZe_0z8HvUm6YUzptQxjRzytptmFTbho5Pw0JqvFue_5GRv0i1tlV2hF7HNCXHESiT5nhf4ECS73eLRAnTmT8cPbHf-IMHPQHo7rQqtI75dA4dTQTqe8QV-yk5nvf4cNYEWsWaKkqRqB0jUcDNmWShlG-yKlzHJyxyNHVWEjrazg7zenqJaAMINP7GVQczDF"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background-dark to-transparent p-4 flex flex-col justify-end">
+<p class="text-[10px] font-bold text-primary uppercase mb-1">Live Feed</p>
+<p class="text-xs text-white/80">Synchronizing Global Clock Layer 3</p>
+</div>
+</div>
+</aside>
+<!-- Center Column: Event Management -->
+<section class="col-span-12 lg:col-span-9 space-y-6">
+<!-- Action Header -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div>
+<h1 class="text-2xl font-bold tracking-tight">Active Schedule</h1>
+<p class="text-sm text-slate-500">Manage high-precision triggers across all synced servers.</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex bg-white dark:bg-white/5 rounded-lg border border-primary/10 p-1">
+<button class="px-4 py-1.5 rounded bg-primary text-white text-sm font-medium">List</button>
+<button class="px-4 py-1.5 rounded text-slate-400 text-sm font-medium hover:text-slate-200">Timeline</button>
+</div>
+<button class="bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 transition-all active:scale-95 shadow-lg shadow-primary/20">
+<span class="material-icons-round text-lg">add</span>
+                        Create Event
+                    </button>
+</div>
+</div>
+<!-- Precision Timeline -->
+<div class="bg-white dark:bg-white/5 rounded-xl border border-primary/10 p-6 overflow-hidden">
+<div class="flex items-center justify-between mb-6">
+<h3 class="text-sm font-bold flex items-center gap-2">
+<span class="material-icons-round text-primary text-sm">query_builder</span>
+                        Upcoming Triggers (Next 24h)
+                    </h3>
+<div class="flex gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+<span class="flex items-center gap-1"><div class="w-2 h-2 rounded-full bg-primary"></div> Drop</span>
+<span class="flex items-center gap-1"><div class="w-2 h-2 rounded-full bg-emerald-500"></div> Sync</span>
+</div>
+</div>
+<div class="relative h-24 flex items-end gap-1 px-2">
+<!-- Fake Visualizer Bars -->
+<div class="flex-1 bg-primary/10 hover:bg-primary/30 transition-colors h-8 rounded-t"></div>
+<div class="flex-1 bg-primary/10 hover:bg-primary/30 transition-colors h-12 rounded-t"></div>
+<div class="flex-1 bg-primary/10 hover:bg-primary/30 transition-colors h-4 rounded-t"></div>
+<div class="flex-1 bg-primary/20 hover:bg-primary/40 transition-colors h-24 rounded-t relative">
+<div class="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] bg-primary text-white px-1.5 py-0.5 rounded tabular-nums">14:00</div>
+</div>
+<div class="flex-1 bg-primary/10 hover:bg-primary/30 transition-colors h-16 rounded-t"></div>
+<div class="flex-1 bg-primary/10 hover:bg-primary/30 transition-colors h-6 rounded-t"></div>
+<div class="flex-1 bg-primary/10 hover:bg-primary/30 transition-colors h-8 rounded-t"></div>
+<div class="flex-1 bg-emerald-500/20 hover:bg-emerald-500/40 transition-colors h-32 rounded-t relative">
+<div class="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] bg-emerald-500 text-white px-1.5 py-0.5 rounded tabular-nums">09:00</div>
+</div>
+<div class="flex-1 bg-primary/10 hover:bg-primary/30 transition-colors h-10 rounded-t"></div>
+<div class="flex-1 bg-primary/10 hover:bg-primary/30 transition-colors h-20 rounded-t"></div>
+<div class="flex-1 bg-primary/10 hover:bg-primary/30 transition-colors h-5 rounded-t"></div>
+<div class="flex-1 bg-primary/10 hover:bg-primary/30 transition-colors h-14 rounded-t"></div>
+<div class="flex-1 bg-primary/10 hover:bg-primary/30 transition-colors h-9 rounded-t"></div>
+<div class="flex-1 bg-primary/10 hover:bg-primary/30 transition-colors h-4 rounded-t"></div>
+<div class="flex-1 bg-primary/10 hover:bg-primary/30 transition-colors h-11 rounded-t"></div>
+<div class="flex-1 bg-primary/10 hover:bg-primary/30 transition-colors h-6 rounded-t"></div>
+<!-- Current Time Marker -->
+<div class="absolute top-0 bottom-0 w-[2px] bg-primary left-1/4 shadow-[0_0_10px_rgba(19,109,236,0.5)]">
+<div class="absolute -top-1 -left-[3px] w-2 h-2 rounded-full bg-primary"></div>
+</div>
+</div>
+<div class="mt-4 flex justify-between text-[10px] text-slate-500 font-bold tracking-widest uppercase">
+<span>12:00</span>
+<span>15:00</span>
+<span>18:00</span>
+<span>21:00</span>
+<span>00:00</span>
+<span>03:00</span>
+<span>06:00</span>
+</div>
+</div>
+<!-- Event Cards Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Active Countdown Card (High Priority) -->
+<div class="bg-primary/5 dark:bg-primary/10 border-2 border-primary rounded-xl p-6 relative pulse-primary overflow-hidden">
+<div class="absolute top-0 right-0 px-3 py-1 bg-primary text-white text-[10px] font-bold uppercase tracking-widest rounded-bl-lg">Critical</div>
+<div class="flex justify-between items-start mb-6">
+<div>
+<h2 class="text-xl font-bold">PS5 Pro Global Drop</h2>
+<p class="text-sm text-primary font-medium">Sony-Direct Server #412</p>
+</div>
+<div class="flex gap-2">
+<button class="w-8 h-8 rounded bg-primary text-white flex items-center justify-center">
+<span class="material-icons-round text-sm">volume_up</span>
+</button>
+<button class="w-8 h-8 rounded bg-primary text-white flex items-center justify-center">
+<span class="material-icons-round text-sm">flashlight_on</span>
+</button>
+</div>
+</div>
+<div class="mb-6">
+<div class="text-sm font-medium text-slate-500 mb-1">Countdown to 14:00:00.000</div>
+<div class="text-5xl font-bold tabular-nums tracking-tight">
+                            00:04:<span class="text-primary">12.82</span>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-2">
+<div class="bg-white/50 dark:bg-white/5 p-2 rounded text-center">
+<div class="text-[10px] text-slate-500 font-bold uppercase">Offset</div>
+<div class="text-xs font-bold tabular-nums">+0.002s</div>
+</div>
+<div class="bg-white/50 dark:bg-white/5 p-2 rounded text-center">
+<div class="text-[10px] text-slate-500 font-bold uppercase">Target</div>
+<div class="text-xs font-bold tabular-nums">UTC+0</div>
+</div>
+<div class="bg-white/50 dark:bg-white/5 p-2 rounded text-center">
+<div class="text-[10px] text-slate-500 font-bold uppercase">Status</div>
+<div class="text-xs font-bold text-emerald-500 uppercase">Ready</div>
+</div>
+</div>
+</div>
+<!-- Secondary Countdown Card -->
+<div class="bg-white dark:bg-white/5 border border-primary/10 rounded-xl p-6 hover:border-primary/40 transition-colors group">
+<div class="flex justify-between items-start mb-6">
+<div>
+<h2 class="text-xl font-bold">Course Registration</h2>
+<p class="text-sm text-slate-500 font-medium">Uni-Portal Cloud</p>
+</div>
+<div class="flex gap-2">
+<button class="w-8 h-8 rounded bg-slate-100 dark:bg-white/5 text-slate-400 hover:text-primary flex items-center justify-center transition-colors">
+<span class="material-icons-round text-sm">volume_off</span>
+</button>
+<button class="w-8 h-8 rounded bg-slate-100 dark:bg-white/5 text-slate-400 hover:text-primary flex items-center justify-center transition-colors">
+<span class="material-icons-round text-sm">flashlight_off</span>
+</button>
+</div>
+</div>
+<div class="mb-6">
+<div class="text-sm font-medium text-slate-500 mb-1">Countdown to 09:00:00.000</div>
+<div class="text-5xl font-bold tabular-nums tracking-tight text-slate-700 dark:text-slate-300">
+                            18:22:<span class="text-slate-400 dark:text-slate-500">01.44</span>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-2">
+<div class="bg-slate-50 dark:bg-white/5 p-2 rounded text-center">
+<div class="text-[10px] text-slate-500 font-bold uppercase">Offset</div>
+<div class="text-xs font-bold tabular-nums">-0.001s</div>
+</div>
+<div class="bg-slate-50 dark:bg-white/5 p-2 rounded text-center">
+<div class="text-[10px] text-slate-500 font-bold uppercase">Target</div>
+<div class="text-xs font-bold tabular-nums">PST</div>
+</div>
+<div class="bg-slate-50 dark:bg-white/5 p-2 rounded text-center">
+<div class="text-[10px] text-slate-500 font-bold uppercase">Status</div>
+<div class="text-xs font-bold text-slate-500 uppercase">Standby</div>
+</div>
+</div>
+</div>
+<!-- Third Card -->
+<div class="bg-white dark:bg-white/5 border border-primary/10 rounded-xl p-6 hover:border-primary/40 transition-colors group">
+<div class="flex justify-between items-start mb-6">
+<div>
+<h2 class="text-xl font-bold">NVIDIA H200 Pre-Order</h2>
+<p class="text-sm text-slate-500 font-medium">Enterprise Supply Node</p>
+</div>
+<div class="flex gap-2">
+<button class="w-8 h-8 rounded bg-slate-100 dark:bg-white/5 text-slate-400 hover:text-primary flex items-center justify-center transition-colors">
+<span class="material-icons-round text-sm">volume_up</span>
+</button>
+<button class="w-8 h-8 rounded bg-slate-100 dark:bg-white/5 text-slate-400 hover:text-primary flex items-center justify-center transition-colors">
+<span class="material-icons-round text-sm">flashlight_on</span>
+</button>
+</div>
+</div>
+<div class="mb-6">
+<div class="text-sm font-medium text-slate-500 mb-1">Countdown to 00:00:00.000</div>
+<div class="text-5xl font-bold tabular-nums tracking-tight text-slate-700 dark:text-slate-300">
+                            32:11:<span class="text-slate-400 dark:text-slate-500">14.01</span>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-2">
+<div class="bg-slate-50 dark:bg-white/5 p-2 rounded text-center">
+<div class="text-[10px] text-slate-500 font-bold uppercase">Offset</div>
+<div class="text-xs font-bold tabular-nums">+0.005s</div>
+</div>
+<div class="bg-slate-50 dark:bg-white/5 p-2 rounded text-center">
+<div class="text-[10px] text-slate-500 font-bold uppercase">Target</div>
+<div class="text-xs font-bold tabular-nums">UTC+8</div>
+</div>
+<div class="bg-slate-50 dark:bg-white/5 p-2 rounded text-center">
+<div class="text-[10px] text-slate-500 font-bold uppercase">Status</div>
+<div class="text-xs font-bold text-slate-500 uppercase">Standby</div>
+</div>
+</div>
+</div>
+<!-- Empty Creation Card -->
+<button class="border-2 border-dashed border-primary/20 rounded-xl p-6 flex flex-col items-center justify-center group hover:border-primary/50 transition-all hover:bg-primary/5">
+<div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform mb-3">
+<span class="material-icons-round text-3xl">add</span>
+</div>
+<span class="font-bold text-slate-500 group-hover:text-primary transition-colors">Schedule New Trigger</span>
+<span class="text-xs text-slate-400 mt-1">Add precision events to the global stack</span>
+</button>
+</div>
+<!-- Recent Logs Section -->
+<div class="bg-white dark:bg-white/5 rounded-xl border border-primary/10 overflow-hidden">
+<div class="p-4 border-b border-primary/10 flex items-center gap-2">
+<span class="material-icons-round text-slate-500 text-sm">history</span>
+<h3 class="text-xs font-bold uppercase tracking-widest text-slate-500">Synchronization History</h3>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="bg-slate-50 dark:bg-white/5 text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+<th class="px-6 py-3">Timestamp</th>
+<th class="px-6 py-3">Event Action</th>
+<th class="px-6 py-3 text-right">Drift (ms)</th>
+<th class="px-6 py-3 text-right">Method</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-primary/5 text-sm tabular-nums">
+<tr>
+<td class="px-6 py-4 font-medium">14:54:12.102</td>
+<td class="px-6 py-4 text-slate-400">PTP Resync Check</td>
+<td class="px-6 py-4 text-right text-emerald-500">+0.001</td>
+<td class="px-6 py-4 text-right text-slate-500 uppercase text-[10px] font-bold">Hardware</td>
+</tr>
+<tr>
+<td class="px-6 py-4 font-medium">14:52:05.881</td>
+<td class="px-6 py-4 text-slate-400">Network Topology Update</td>
+<td class="px-6 py-4 text-right text-amber-500">-0.004</td>
+<td class="px-6 py-4 text-right text-slate-500 uppercase text-[10px] font-bold">NTP v4</td>
+</tr>
+<tr>
+<td class="px-6 py-4 font-medium">14:50:00.000</td>
+<td class="px-6 py-4 text-slate-400">Scheduled Trigger: PS5 Pre-Check</td>
+<td class="px-6 py-4 text-right text-emerald-500">0.000</td>
+<td class="px-6 py-4 text-right text-slate-500 uppercase text-[10px] font-bold">Local OSC</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+</main>
+<!-- Floating Action Feedback Area (Simulated Flash) -->
+<div class="fixed bottom-6 right-6 flex flex-col items-end gap-3">
+<div class="bg-background-dark/90 dark:bg-white p-4 rounded-lg shadow-2xl flex items-center gap-4 border border-primary/20 max-w-sm animate-pulse border-primary">
+<div class="w-10 h-10 rounded bg-primary flex items-center justify-center text-white">
+<span class="material-icons-round">notification_important</span>
+</div>
+<div>
+<p class="text-xs font-bold text-primary uppercase">Trigger Imminent</p>
+<p class="text-sm font-medium dark:text-slate-900 text-white">PS5 Pro Global Drop starts in 4 minutes.</p>
+</div>
+</div>
+</div>
+</body></html>

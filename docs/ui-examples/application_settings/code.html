@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ticketime | Application Settings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#136dec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101822",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        /* Custom scrollbar for a pro feel */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #101822;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #136dec33;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #136dec;
+        }
+        .glass-panel {
+            background: rgba(19, 109, 236, 0.03);
+            border: 1px solid rgba(19, 109, 236, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex">
+<!-- Sidebar Navigation -->
+<aside class="w-64 border-r border-primary/10 bg-background-light dark:bg-background-dark/50 hidden lg:flex flex-col sticky top-0 h-screen">
+<div class="p-6 flex items-center gap-3">
+<div class="w-8 h-8 bg-primary rounded flex items-center justify-center text-white">
+<span class="material-icons text-xl">timer</span>
+</div>
+<h1 class="text-xl font-bold tracking-tight">Ticketime<span class="text-primary">.</span></h1>
+</div>
+<nav class="flex-1 px-4 space-y-1 mt-4">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 text-primary font-medium transition-all group" href="#">
+<span class="material-icons text-xl">settings</span>
+                Settings
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:bg-primary/5 hover:text-primary transition-all group" href="#">
+<span class="material-icons text-xl">dashboard</span>
+                Live Dashboard
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:bg-primary/5 hover:text-primary transition-all group" href="#">
+<span class="material-icons text-xl">analytics</span>
+                Sync Logs
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:bg-primary/5 hover:text-primary transition-all group" href="#">
+<span class="material-icons text-xl">history</span>
+                History
+            </a>
+</nav>
+<div class="p-6">
+<div class="glass-panel p-4 rounded-xl">
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs uppercase font-bold tracking-widest text-slate-500">Live Status</span>
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+</div>
+<div class="text-xs font-mono text-primary">
+                    Offset: +0.002ms
+                </div>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col">
+<!-- Header -->
+<header class="h-16 border-b border-primary/10 flex items-center justify-between px-8 bg-background-light/50 dark:bg-background-dark/50 backdrop-blur-md sticky top-0 z-10">
+<div class="flex items-center gap-4">
+<h2 class="font-semibold text-lg">Application Settings</h2>
+<span class="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">v4.2.0-stable</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-slate-500 hover:text-primary transition-colors">
+<span class="material-icons">notifications</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="User avatar profile picture" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD9jNDv7yyBSDCraqHa6G84MW6_qvyPXWenl_LjVbmE0biZHHQ4RSSPy8fO-jX1CMnJ4Pz9aGnSvG4yzpyN3VVP4FOFrXVqMaYkrOsrGDdiat_-ZnBhW8nOVRoqynnZeeBBJAaBeJc_W9AGG1dbLvhPozN-rsYqjleprfvegWvflkZKYM1fKsJ0k62wWiWp3H1SrBVyL-d4hTdsRaECrgTKd1uEui8BHkRxOWFhq1zfHbTRnObXXxpyzR2MTQrQ-b6cIIZBBa7irxF6"/>
+</div>
+</div>
+</header>
+<!-- Settings Content -->
+<div class="p-8 max-w-5xl mx-auto w-full space-y-12 pb-24">
+<!-- Category: Sync Engine -->
+<section class="space-y-6" id="sync-engine">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-icons">sync</span>
+</div>
+<div>
+<h3 class="text-xl font-bold">Sync Engine</h3>
+<p class="text-sm text-slate-500">Configure core synchronization parameters and fallbacks.</p>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- NTP Fallback Toggle -->
+<div class="p-5 rounded-xl bg-white dark:bg-slate-900/50 border border-primary/10 flex items-center justify-between">
+<div>
+<h4 class="font-medium">NTP Fallback</h4>
+<p class="text-xs text-slate-500 mt-1">Automatically switch to standard NTP if PTP fails.</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-slate-200 dark:bg-slate-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<!-- Precision Threshold -->
+<div class="p-5 rounded-xl bg-white dark:bg-slate-900/50 border border-primary/10 flex items-center justify-between">
+<div>
+<h4 class="font-medium">Stratum Target</h4>
+<p class="text-xs text-slate-500 mt-1">Preferred stratum level for primary source.</p>
+</div>
+<select class="bg-background-light dark:bg-background-dark border-primary/20 rounded-lg text-sm focus:ring-primary focus:border-primary">
+<option>Stratum 0 (Atomic)</option>
+<option selected="">Stratum 1 (GPS)</option>
+<option>Stratum 2 (Network)</option>
+</select>
+</div>
+<!-- Request Interval Slider -->
+<div class="p-5 rounded-xl bg-white dark:bg-slate-900/50 border border-primary/10 md:col-span-2">
+<div class="flex justify-between items-center mb-4">
+<div>
+<h4 class="font-medium">Request Interval</h4>
+<p class="text-xs text-slate-500 mt-1">Frequency of sync requests to the master server.</p>
+</div>
+<span class="text-primary font-mono font-bold">0.5s</span>
+</div>
+<input class="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-primary" max="60" min="0.1" step="0.1" type="range" value="0.5"/>
+<div class="flex justify-between mt-2 text-[10px] text-slate-500 font-mono">
+<span>0.1s (Aggressive)</span>
+<span>60.0s (Power Save)</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Category: Display -->
+<section class="space-y-6" id="display">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-icons">visibility</span>
+</div>
+<div>
+<h3 class="text-xl font-bold">Display</h3>
+<p class="text-sm text-slate-500">Visual precision and interface localization.</p>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="p-5 rounded-xl bg-white dark:bg-slate-900/50 border border-primary/10 flex items-center justify-between">
+<div>
+<h4 class="font-medium">Millisecond Precision</h4>
+<p class="text-xs text-slate-500 mt-1">Show sub-second data in main display.</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-slate-200 dark:bg-slate-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="p-5 rounded-xl bg-white dark:bg-slate-900/50 border border-primary/10 flex items-center justify-between">
+<div>
+<h4 class="font-medium">Timezone Format</h4>
+<p class="text-xs text-slate-500 mt-1">Preferred timezone nomenclature.</p>
+</div>
+<select class="bg-background-light dark:bg-background-dark border-primary/20 rounded-lg text-sm focus:ring-primary focus:border-primary">
+<option>UTC Offset (UTC+0)</option>
+<option>Military (Zulu)</option>
+<option selected="">Standard (GMT)</option>
+</select>
+</div>
+</div>
+</section>
+<!-- Category: Alerts -->
+<section class="space-y-6" id="alerts">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-icons">notifications_active</span>
+</div>
+<div>
+<h3 class="text-xl font-bold">Alerts &amp; Drift</h3>
+<p class="text-sm text-slate-500">Configure visual and audible threshold notifications.</p>
+</div>
+</div>
+<div class="space-y-4">
+<div class="p-5 rounded-xl bg-white dark:bg-slate-900/50 border border-primary/10">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="flex-1">
+<h4 class="font-medium">Clock Drift Warning</h4>
+<p class="text-xs text-slate-500 mt-1">Alert when local clock deviates from source beyond threshold.</p>
+</div>
+<div class="flex items-center gap-3">
+<span class="text-xs font-mono text-slate-400">&gt; </span>
+<input class="w-20 bg-background-light dark:bg-background-dark border-primary/20 rounded-lg text-sm font-mono text-primary text-center" type="number" value="15"/>
+<span class="text-xs font-mono text-slate-400">ms</span>
+<label class="relative inline-flex items-center cursor-pointer ml-4">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-slate-200 dark:bg-slate-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="p-5 rounded-xl bg-white dark:bg-slate-900/50 border border-primary/10 flex items-center justify-between">
+<div>
+<h4 class="font-medium">Visual Flash</h4>
+<p class="text-xs text-slate-500 mt-1">Screen border flashes on major sync events.</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-slate-200 dark:bg-slate-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="p-5 rounded-xl bg-white dark:bg-slate-900/50 border border-primary/10 flex items-center justify-between">
+<div>
+<h4 class="font-medium">Sound Countdown</h4>
+<p class="text-xs text-slate-500 mt-1">Audible pips for final 5s of critical tasks.</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-slate-200 dark:bg-slate-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+</div>
+</section>
+<!-- Category: API & Webhooks -->
+<section class="space-y-6" id="api">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-icons">hub</span>
+</div>
+<div>
+<h3 class="text-xl font-bold">API &amp; Webhooks</h3>
+<p class="text-sm text-slate-500">Integrate Ticketime data with external systems.</p>
+</div>
+</div>
+<div class="space-y-4">
+<!-- WebSocket Status -->
+<div class="p-6 rounded-xl bg-primary/5 border border-primary/20 flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="flex items-center gap-4">
+<div class="p-3 bg-white dark:bg-slate-900 rounded-lg border border-primary/10">
+<span class="material-icons text-primary">lan</span>
+</div>
+<div>
+<h4 class="font-bold flex items-center gap-2">
+                                    WebSocket Server
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-500/10 text-green-500 uppercase border border-green-500/20">Active</span>
+</h4>
+<p class="text-xs text-slate-500 mt-0.5">ws://localhost:8080/stream</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="px-4 py-2 bg-primary/20 hover:bg-primary/30 text-primary text-sm font-semibold rounded-lg transition-all">Restart Server</button>
+<button class="p-2 text-slate-400 hover:text-white transition-colors">
+<span class="material-icons">settings_ethernet</span>
+</button>
+</div>
+</div>
+<!-- API Keys -->
+<div class="p-5 rounded-xl bg-white dark:bg-slate-900/50 border border-primary/10">
+<h4 class="font-medium mb-3">REST API Key</h4>
+<div class="flex gap-2">
+<div class="relative flex-1">
+<input class="w-full bg-background-light dark:bg-background-dark border-primary/20 rounded-lg text-sm font-mono p-3 pr-10 focus:ring-primary focus:border-primary" readonly="" type="password" value="tk_live_948jdhf839hksl028374hfj"/>
+<button class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors">
+<span class="material-icons text-lg">visibility</span>
+</button>
+</div>
+<button class="px-4 py-2 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-all flex items-center gap-2">
+<span class="material-icons text-sm">content_copy</span>
+                                Copy
+                            </button>
+<button class="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+                                Regenerate
+                            </button>
+</div>
+</div>
+<!-- Webhook Config -->
+<div class="p-5 rounded-xl bg-white dark:bg-slate-900/50 border border-primary/10">
+<div class="flex items-center justify-between mb-4">
+<h4 class="font-medium">Webhook Endpoints</h4>
+<button class="text-primary text-xs font-bold hover:underline">+ ADD ENDPOINT</button>
+</div>
+<div class="space-y-2">
+<div class="flex items-center justify-between p-3 bg-background-light dark:bg-background-dark/50 rounded-lg border border-primary/5">
+<div class="flex items-center gap-3">
+<span class="w-2 h-2 rounded-full bg-green-500"></span>
+<span class="text-xs font-mono text-slate-400 truncate max-w-[200px] md:max-w-md">https://api.internal-monitoring.io/v1/sync-pulse</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-[10px] text-slate-500 font-mono">POST</span>
+<button class="text-slate-500 hover:text-red-400"><span class="material-icons text-sm">delete</span></button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Footer / Save Bar -->
+<footer class="fixed bottom-0 left-64 right-0 p-4 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-xl border-t border-primary/10 z-20">
+<div class="max-w-5xl mx-auto flex items-center justify-between">
+<div class="flex items-center gap-2 text-primary">
+<span class="material-icons text-sm">check_circle</span>
+<span class="text-xs font-medium">All changes automatically saved to local config.</span>
+</div>
+<div class="flex items-center gap-3">
+<button class="px-5 py-2 text-sm font-semibold text-slate-400 hover:text-slate-100 transition-colors">Discard Draft</button>
+<button class="px-6 py-2 bg-primary text-white text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all">Export JSON</button>
+</div>
+</div>
+</footer>
+</main>
+<!-- Floating Live Drift Widget -->
+<div class="fixed bottom-24 right-8 w-64 glass-panel rounded-xl p-4 shadow-2xl z-30 hidden xl:block">
+<div class="flex items-center justify-between mb-4">
+<h5 class="text-xs font-bold uppercase tracking-widest text-slate-400">Sync Health</h5>
+<span class="text-[10px] font-mono text-primary">STABLE</span>
+</div>
+<div class="h-16 flex items-end gap-1 px-1">
+<div class="flex-1 bg-primary/20 h-[40%] rounded-t-sm"></div>
+<div class="flex-1 bg-primary/20 h-[35%] rounded-t-sm"></div>
+<div class="flex-1 bg-primary/40 h-[60%] rounded-t-sm"></div>
+<div class="flex-1 bg-primary/30 h-[45%] rounded-t-sm"></div>
+<div class="flex-1 bg-primary/60 h-[80%] rounded-t-sm"></div>
+<div class="flex-1 bg-primary/20 h-[30%] rounded-t-sm"></div>
+<div class="flex-1 bg-primary/80 h-[95%] rounded-t-sm"></div>
+<div class="flex-1 bg-primary/40 h-[55%] rounded-t-sm"></div>
+<div class="flex-1 bg-primary h-[100%] rounded-t-sm animate-pulse"></div>
+</div>
+<div class="mt-4 pt-4 border-t border-primary/10 flex justify-between items-center">
+<div class="text-[10px] text-slate-500">Last Sync: <span class="text-primary font-mono">2ms ago</span></div>
+<span class="material-icons text-primary text-xs">bolt</span>
+</div>
+</div>
+</body></html>

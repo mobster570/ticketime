@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Server Detail &amp; Analytics - Ticketime</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#136dec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101822",
+                        "success-neon": "#39FF14",
+                        "warning-amber": "#FFBF00",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk"],
+                        "mono": ["JetBrains Mono"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        .mono-font {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .gauge-conic {
+            background: conic-gradient(from 180deg at 50% 100%, #39FF14 0deg, #39FF14 140deg, #1e293b 140deg, #1e293b 360deg);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-200 min-h-screen font-display">
+<!-- Sidebar Navigation -->
+<aside class="fixed left-0 top-0 h-full w-20 bg-slate-100 dark:bg-slate-900 border-r border-primary/10 flex flex-col items-center py-8 gap-8 z-50">
+<div class="w-12 h-12 bg-primary rounded-xl flex items-center justify-center">
+<span class="material-icons text-white text-3xl">schedule</span>
+</div>
+<nav class="flex flex-col gap-6">
+<button class="w-12 h-12 flex items-center justify-center rounded-lg text-slate-400 hover:bg-primary/10 hover:text-primary transition-colors">
+<span class="material-icons">dashboard</span>
+</button>
+<button class="w-12 h-12 flex items-center justify-center rounded-lg bg-primary/20 text-primary">
+<span class="material-icons">dns</span>
+</button>
+<button class="w-12 h-12 flex items-center justify-center rounded-lg text-slate-400 hover:bg-primary/10 hover:text-primary transition-colors">
+<span class="material-icons">analytics</span>
+</button>
+<button class="w-12 h-12 flex items-center justify-center rounded-lg text-slate-400 hover:bg-primary/10 hover:text-primary transition-colors">
+<span class="material-icons">settings</span>
+</button>
+</nav>
+</aside>
+<main class="ml-20 p-8 max-w-[1600px] mx-auto">
+<!-- Header -->
+<header class="flex justify-between items-center mb-10">
+<div class="space-y-1">
+<div class="flex items-center gap-2 text-sm text-slate-500 font-medium">
+<span>Servers</span>
+<span class="material-icons text-xs">chevron_right</span>
+<span class="text-primary">Ticketmaster UK</span>
+</div>
+<h1 class="text-3xl font-bold tracking-tight">Ticketmaster UK Production</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="flex items-center gap-2 px-4 py-2 bg-slate-800 text-slate-200 border border-slate-700 rounded-lg font-medium hover:bg-slate-700 transition-all">
+<span class="material-icons text-sm">download</span>
+                    Export Logs
+                </button>
+<button class="flex items-center gap-2 px-6 py-2 bg-primary text-white rounded-lg font-semibold hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all">
+<span class="material-icons text-sm">sync</span>
+                    Re-sync Now
+                </button>
+</div>
+</header>
+<!-- Main Dashboard Grid -->
+<div class="grid grid-cols-12 gap-6">
+<!-- Hero Clock Section -->
+<section class="col-span-12 lg:col-span-8 bg-slate-100 dark:bg-slate-900/50 border border-primary/10 rounded-xl p-10 flex flex-col justify-center items-center relative overflow-hidden">
+<div class="absolute inset-0 opacity-5 pointer-events-none">
+<div class="absolute top-0 left-0 w-full h-full" style="background-image: radial-gradient(circle at 2px 2px, #136dec 1px, transparent 0); background-size: 40px 40px;"></div>
+</div>
+<div class="text-center space-y-2 mb-8">
+<span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-success-neon/10 text-success-neon text-xs font-bold uppercase tracking-widest">
+<span class="w-2 h-2 rounded-full bg-success-neon animate-pulse"></span>
+                        Synchronized
+                    </span>
+<p class="text-slate-500 uppercase tracking-widest text-sm font-semibold">Current Precise Time (UTC)</p>
+</div>
+<div class="mono-font text-7xl md:text-8xl lg:text-9xl font-bold tracking-tighter text-slate-800 dark:text-white flex items-baseline gap-1">
+<span>14</span><span class="animate-pulse">:</span><span>32</span><span class="animate-pulse">:</span><span>09</span>
+<span class="text-4xl md:text-5xl lg:text-6xl text-primary font-medium ml-2">.482</span>
+</div>
+<div class="mt-8 grid grid-cols-3 gap-12 text-center w-full max-w-2xl border-t border-slate-200 dark:border-slate-800 pt-8">
+<div>
+<p class="text-xs text-slate-500 uppercase tracking-wider mb-1">Offset</p>
+<p class="mono-font text-lg font-bold text-success-neon">+0.002ms</p>
+</div>
+<div>
+<p class="text-xs text-slate-500 uppercase tracking-wider mb-1">Protocol</p>
+<p class="mono-font text-lg font-bold">PTP v2.1</p>
+</div>
+<div>
+<p class="text-xs text-slate-500 uppercase tracking-wider mb-1">Stratum</p>
+<p class="mono-font text-lg font-bold">1 (Atomic)</p>
+</div>
+</div>
+</section>
+<!-- Health Panel -->
+<section class="col-span-12 lg:col-span-4 bg-slate-100 dark:bg-slate-900/50 border border-primary/10 rounded-xl p-6">
+<div class="flex justify-between items-center mb-8">
+<h3 class="text-lg font-bold">Sync Health</h3>
+<span class="material-icons text-slate-500">info_outline</span>
+</div>
+<div class="relative flex flex-col items-center justify-center">
+<!-- Gauge Mockup -->
+<div class="relative w-48 h-24 overflow-hidden">
+<div class="gauge-conic w-48 h-48 rounded-full"></div>
+<div class="absolute inset-4 bg-slate-100 dark:bg-slate-900/50 rounded-full"></div>
+</div>
+<div class="text-center -mt-4">
+<div class="text-4xl font-bold text-success-neon">98%</div>
+<div class="text-sm font-medium text-slate-500">Optimal Stability</div>
+</div>
+</div>
+<div class="mt-10 space-y-4">
+<div class="p-4 bg-background-light dark:bg-slate-800/40 rounded-lg flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="material-icons text-success-neon">bolt</span>
+<div>
+<p class="text-xs text-slate-500 font-bold uppercase">Jitter</p>
+<p class="text-sm font-semibold">0.045 μs</p>
+</div>
+</div>
+<span class="text-[10px] bg-success-neon/10 text-success-neon px-2 py-0.5 rounded uppercase font-bold">Stable</span>
+</div>
+<div class="p-4 bg-background-light dark:bg-slate-800/40 rounded-lg flex items-center justify-between border border-warning-amber/30">
+<div class="flex items-center gap-3">
+<span class="material-icons text-warning-amber">warning</span>
+<div>
+<p class="text-xs text-slate-500 font-bold uppercase">Drift Peak</p>
+<p class="text-sm font-semibold">1.2 μs / hr</p>
+</div>
+</div>
+<span class="text-[10px] bg-warning-amber/10 text-warning-amber px-2 py-0.5 rounded uppercase font-bold">Alert</span>
+</div>
+</div>
+</section>
+<!-- Analytics Section: Box Plot RTT -->
+<section class="col-span-12 lg:col-span-6 bg-slate-100 dark:bg-slate-900/50 border border-primary/10 rounded-xl p-6">
+<div class="flex justify-between items-center mb-6">
+<h3 class="text-lg font-bold">RTT Distribution (ms)</h3>
+<div class="flex gap-2">
+<span class="px-2 py-1 bg-primary/10 text-primary text-[10px] font-bold rounded">LIVE</span>
+<span class="px-2 py-1 bg-slate-800 text-slate-400 text-[10px] font-bold rounded uppercase">60 MINS</span>
+</div>
+</div>
+<div class="h-48 w-full flex items-center justify-center relative">
+<!-- Box Plot Mockup -->
+<div class="w-full h-px bg-slate-700 absolute top-1/2 -translate-y-1/2"></div>
+<div class="flex items-center w-full justify-around relative px-10">
+<!-- Whisker Left -->
+<div class="h-8 w-px bg-slate-500"></div>
+<div class="h-px bg-slate-500 flex-grow max-w-[40px]"></div>
+<!-- Box -->
+<div class="h-20 w-32 border-2 border-primary bg-primary/20 rounded flex items-center justify-center relative">
+<div class="h-full w-px bg-primary absolute left-1/2 -translate-x-1/2"></div>
+<span class="absolute -top-6 text-xs mono-font">8.2ms (Median)</span>
+</div>
+<!-- Whisker Right -->
+<div class="h-px bg-slate-500 flex-grow max-w-[80px]"></div>
+<div class="h-8 w-px bg-slate-500"></div>
+<!-- Outlier -->
+<div class="ml-4 w-2 h-2 rounded-full border border-warning-amber"></div>
+</div>
+<!-- Axis -->
+<div class="absolute bottom-0 w-full flex justify-between text-[10px] text-slate-600 mono-font">
+<span>4.0</span>
+<span>6.0</span>
+<span>8.0</span>
+<span>10.0</span>
+<span>12.0</span>
+<span>14.0</span>
+</div>
+</div>
+<p class="text-xs text-slate-500 mt-6 text-center italic">Round Trip Time variability shows high stability within 2 standard deviations.</p>
+</section>
+<!-- Drift Rate Chart -->
+<section class="col-span-12 lg:col-span-6 bg-slate-100 dark:bg-slate-900/50 border border-primary/10 rounded-xl p-6">
+<div class="flex justify-between items-center mb-6">
+<h3 class="text-lg font-bold">Drift Rate (μs)</h3>
+<div class="flex items-center gap-4 text-xs font-semibold">
+<div class="flex items-center gap-1">
+<div class="w-3 h-3 rounded-full bg-primary"></div>
+<span>Primary</span>
+</div>
+<div class="flex items-center gap-1 opacity-50">
+<div class="w-3 h-3 rounded-full bg-slate-500"></div>
+<span>Benchmark</span>
+</div>
+</div>
+</div>
+<div class="h-48 w-full relative flex items-end overflow-hidden">
+<!-- Grid Lines -->
+<div class="absolute inset-0 flex flex-col justify-between opacity-10 pointer-events-none">
+<div class="h-px bg-slate-300"></div>
+<div class="h-px bg-slate-300"></div>
+<div class="h-px bg-slate-300"></div>
+<div class="h-px bg-slate-300"></div>
+</div>
+<!-- SVG Chart Path -->
+<svg class="w-full h-40" viewbox="0 0 400 100">
+<defs>
+<lineargradient id="driftGradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#136dec" stop-opacity="0.3"></stop>
+<stop offset="100%" stop-color="#136dec" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+<path d="M 0 80 Q 20 50 40 70 T 80 40 T 120 60 T 160 30 T 200 50 T 240 20 T 280 40 T 320 10 T 360 30 T 400 20 L 400 100 L 0 100 Z" fill="url(#driftGradient)"></path>
+<path d="M 0 80 Q 20 50 40 70 T 80 40 T 120 60 T 160 30 T 200 50 T 240 20 T 280 40 T 320 10 T 360 30 T 400 20" fill="none" stroke="#136dec" stroke-width="2"></path>
+<!-- Benchmark Comparison Path -->
+<path d="M 0 90 L 400 90" fill="none" opacity="0.5" stroke="#64748b" stroke-dasharray="4" stroke-width="1"></path>
+</svg>
+</div>
+<div class="flex justify-between mt-4 text-[10px] text-slate-500 uppercase tracking-widest font-bold">
+<span>-60 min</span>
+<span>-45 min</span>
+<span>-30 min</span>
+<span>-15 min</span>
+<span>Now</span>
+</div>
+</section>
+<!-- Metadata/Info Cards -->
+<section class="col-span-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<div class="bg-slate-100 dark:bg-slate-900/50 border border-primary/10 p-4 rounded-lg">
+<p class="text-[10px] text-slate-500 font-bold uppercase mb-1">Server Address</p>
+<p class="mono-font text-sm">192.168.102.44</p>
+<div class="flex items-center gap-1 mt-2 text-[10px] text-slate-400">
+<span class="material-icons text-xs">location_on</span>
+<span>London, UK (LD5 Data Center)</span>
+</div>
+</div>
+<div class="bg-slate-100 dark:bg-slate-900/50 border border-primary/10 p-4 rounded-lg">
+<p class="text-[10px] text-slate-500 font-bold uppercase mb-1">Last Full Audit</p>
+<p class="mono-font text-sm">Today, 04:00 AM UTC</p>
+<div class="flex items-center gap-1 mt-2 text-[10px] text-success-neon">
+<span class="material-icons text-xs">verified_user</span>
+<span>Verified - No Drift Detected</span>
+</div>
+</div>
+<div class="bg-slate-100 dark:bg-slate-900/50 border border-primary/10 p-4 rounded-lg">
+<p class="text-[10px] text-slate-500 font-bold uppercase mb-1">Current Load</p>
+<div class="flex items-end gap-2">
+<p class="mono-font text-xl font-bold">14.2%</p>
+<div class="flex-grow h-1.5 bg-slate-800 rounded-full mb-1">
+<div class="h-full bg-primary rounded-full w-[14.2%]"></div>
+</div>
+</div>
+</div>
+<div class="bg-slate-100 dark:bg-slate-900/50 border border-primary/10 p-4 rounded-lg flex items-center gap-4">
+<div class="p-2 bg-primary/20 rounded-lg">
+<span class="material-icons text-primary">public</span>
+</div>
+<div>
+<p class="text-[10px] text-slate-500 font-bold uppercase mb-1">Sync Source</p>
+<p class="text-sm font-semibold">Primary Clock Master-1</p>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Footer Status Bar -->
+<footer class="fixed bottom-0 left-20 right-0 bg-slate-100 dark:bg-slate-950 border-t border-primary/10 px-6 py-2 flex justify-between items-center z-40">
+<div class="flex gap-6 text-[11px] font-medium text-slate-500">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-success-neon"></span>
+                System Ready
+            </div>
+<div class="flex items-center gap-1.5">
+<span class="material-icons text-sm">lan</span>
+                10Gbps Fiber
+            </div>
+<div class="flex items-center gap-1.5">
+<span class="material-icons text-sm">memory</span>
+                CPU 0.4%
+            </div>
+</div>
+<div class="flex items-center gap-4">
+<span class="text-[11px] text-slate-500">Ticketime Agent v2.4.0-stable</span>
+<div class="h-4 w-px bg-slate-800"></div>
+<span class="text-[11px] text-slate-500 mono-font">BUILD: 20231024.11</span>
+</div>
+</footer>
+</body></html>

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ticketime | Precision Clock &amp; Tray</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .tabular-nums {
+            font-variant-numeric: tabular-nums;
+        }
+        .glass-effect {
+            backdrop-filter: blur(12px);
+            background-color: rgba(16, 25, 34, 0.75);
+        }
+        .tray-hover:hover {
+            background-color: rgba(19, 127, 236, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen flex flex-col items-center justify-center p-8 space-y-12">
+<!-- Desktop Environment Simulation Wrapper -->
+<div class="relative w-full max-w-5xl aspect-video rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-2xl bg-slate-100 dark:bg-[#0a0f14]">
+<img class="absolute inset-0 w-full h-full object-cover opacity-40" data-alt="Abstract dark blue and black geometric desktop wallpaper" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA2VZB2aM6JwA3MX92EPSwGqGe8nwWCcaaJEdtzfyRhpB_Pu8cJZlr1c-C1kd-eW6e--X5sR0PCH_WAcYkOhMSNp-IdohPrS6h7KCd-Px_BjrEdCBJ9zpYgPFUZoMLjv7saE2Os_G8VLRKQ9v8-uEiJrlXkzzecK4EThZ6U-YZ6sMW7MXeTMaIaX1DPOk8sEpT4hrvQqkUvxiM1C524KjGO7rZJOYpPrxKicjdb-pEd0A2c3pl0uaqYU0IFxMCDzDV6xMRyyT4he14u"/>
+<!-- Floating Time Overlay -->
+<div class="absolute top-12 left-12 group">
+<div class="glass-effect border border-white/10 rounded-xl p-4 shadow-2xl w-[320px] transition-all duration-300 hover:border-primary/50 cursor-move">
+<!-- Header / Drag Handle -->
+<div class="flex items-center justify-between mb-3 opacity-60 group-hover:opacity-100 transition-opacity">
+<div class="flex items-center gap-2">
+<span class="material-icons text-xs text-primary">navigation</span>
+<span class="text-[10px] uppercase tracking-widest font-bold">Ticketime Overlay</span>
+</div>
+<div class="flex gap-2">
+<button class="hover:text-primary transition-colors"><span class="material-icons text-sm">settings</span></button>
+<button class="hover:text-primary transition-colors"><span class="material-icons text-sm">push_pin</span></button>
+</div>
+</div>
+<!-- Clock Display -->
+<div class="flex flex-col items-center py-2">
+<div class="flex items-baseline tabular-nums">
+<span class="text-5xl font-light tracking-tight">14:28:54</span>
+<span class="text-2xl font-medium text-primary ml-1">.392</span>
+</div>
+<div class="mt-2 flex items-center gap-3">
+<span class="text-[10px] bg-primary/20 text-primary px-2 py-0.5 rounded-full font-semibold border border-primary/30">UTC +0</span>
+<span class="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full font-semibold border border-emerald-500/30">PTP L2 SYNCED</span>
+</div>
+</div>
+<!-- Quick Toggles -->
+<div class="mt-4 pt-4 border-t border-white/5 flex items-center justify-around opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+<button class="flex flex-col items-center gap-1 group/btn">
+<div class="p-2 rounded-lg bg-white/5 group-hover/btn:bg-primary/20 group-hover/btn:text-primary transition-all">
+<span class="material-icons text-lg">timer</span>
+</div>
+<span class="text-[10px]">MS Toggle</span>
+</button>
+<button class="flex flex-col items-center gap-1 group/btn text-primary">
+<div class="p-2 rounded-lg bg-primary/20 transition-all">
+<span class="material-icons text-lg">public</span>
+</div>
+<span class="text-[10px]">UTC Mode</span>
+</button>
+<button class="flex flex-col items-center gap-1 group/btn">
+<div class="p-2 rounded-lg bg-white/5 group-hover/btn:bg-primary/20 group-hover/btn:text-primary transition-all">
+<span class="material-icons text-lg">opacity</span>
+</div>
+<span class="text-[10px]">Opacity</span>
+</button>
+</div>
+</div>
+<!-- Mock Context Menu (Visual Only) -->
+<div class="absolute -right-48 top-0 w-44 glass-effect border border-white/10 rounded-lg py-2 shadow-xl hidden group-hover:block transition-all">
+<div class="px-3 py-1.5 text-xs hover:bg-primary/20 flex items-center justify-between cursor-default">
+<span>Always on Top</span>
+<span class="material-icons text-xs text-primary">check</span>
+</div>
+<div class="px-3 py-1.5 text-xs hover:bg-primary/20 cursor-default">Precision Settings</div>
+<div class="px-3 py-1.5 text-xs hover:bg-primary/20 cursor-default">Custom Format</div>
+<div class="mx-2 my-1 border-t border-white/10"></div>
+<div class="px-3 py-1.5 text-xs hover:bg-primary/20 cursor-default">Lock Position</div>
+<div class="px-3 py-1.5 text-xs hover:bg-primary/20 cursor-default text-red-400">Exit Application</div>
+</div>
+</div>
+<!-- Simulated Taskbar -->
+<div class="absolute bottom-0 w-full h-10 bg-black/40 backdrop-blur-md border-t border-white/5 flex items-center justify-end px-4 gap-4">
+<!-- System Tray Area -->
+<div class="flex items-center gap-3">
+<span class="material-icons text-sm opacity-60">wifi</span>
+<span class="material-icons text-sm opacity-60">volume_up</span>
+<!-- App Tray Icon -->
+<div class="relative w-6 h-6 flex items-center justify-center tray-hover rounded transition-colors cursor-pointer group/tray">
+<div class="w-3 h-3 bg-primary rounded-sm shadow-[0_0_8px_rgba(19,127,236,0.6)]"></div>
+<!-- Tray Tooltip Preview -->
+<div class="absolute bottom-12 right-0 w-48 glass-effect border border-white/10 rounded-lg p-3 shadow-xl opacity-0 group-hover/tray:opacity-100 transition-opacity pointer-events-none">
+<p class="text-[10px] font-bold uppercase mb-2 tracking-wider opacity-60">Ticketime Health</p>
+<div class="flex items-center justify-between text-xs">
+<span>Status:</span>
+<span class="text-emerald-400 font-medium">Synchronized</span>
+</div>
+<div class="flex items-center justify-between text-xs mt-1">
+<span>Drift:</span>
+<span class="text-slate-300 tabular-nums">&lt; 0.002ms</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col items-end leading-none">
+<span class="text-[10px] font-medium tabular-nums">14:28 PM</span>
+<span class="text-[10px] opacity-60">10/24/2023</span>
+</div>
+</div>
+</div>
+</div>
+<!-- UI States & Components Documentation Section -->
+<div class="w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Status Indicator Component -->
+<div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-xl">
+<h3 class="text-sm font-bold uppercase tracking-widest text-primary mb-6">Tray Health States</h3>
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 flex items-center justify-center bg-slate-100 dark:bg-slate-800 rounded">
+<div class="w-4 h-4 bg-primary rounded shadow-[0_0_8px_rgba(19,127,236,0.5)]"></div>
+</div>
+<span class="text-sm">Synced (PTP)</span>
+</div>
+<span class="text-[10px] text-emerald-500 font-bold uppercase">Healthy</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 flex items-center justify-center bg-slate-100 dark:bg-slate-800 rounded">
+<div class="w-4 h-4 bg-amber-500 rounded shadow-[0_0_8px_rgba(245,158,11,0.5)]"></div>
+</div>
+<span class="text-sm">High Jitter</span>
+</div>
+<span class="text-[10px] text-amber-500 font-bold uppercase">Warning</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 flex items-center justify-center bg-slate-100 dark:bg-slate-800 rounded">
+<div class="w-4 h-4 bg-red-500 rounded shadow-[0_0_8px_rgba(239,68,68,0.5)]"></div>
+</div>
+<span class="text-sm">Lost Sync</span>
+</div>
+<span class="text-[10px] text-red-500 font-bold uppercase">Critical</span>
+</div>
+</div>
+</div>
+<!-- Overlay Settings Component -->
+<div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-xl col-span-1 md:col-span-2">
+<h3 class="text-sm font-bold uppercase tracking-widest text-primary mb-6">Overlay Customization</h3>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
+<div class="space-y-6">
+<div>
+<label class="text-xs font-semibold block mb-3 opacity-60">OVERLAY OPACITY</label>
+<input class="w-full h-1 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-primary" type="range"/>
+<div class="flex justify-between mt-2 text-[10px] opacity-40">
+<span>0%</span>
+<span>100%</span>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-sm">Auto-Hide when inactive</span>
+<div class="w-10 h-5 bg-primary rounded-full relative">
+<div class="absolute right-0.5 top-0.5 w-4 h-4 bg-white rounded-full"></div>
+</div>
+</div>
+</div>
+<div class="space-y-4">
+<div class="flex items-center justify-between p-3 border border-slate-200 dark:border-slate-800 rounded-lg">
+<div class="flex items-center gap-2">
+<span class="material-icons text-primary">gps_fixed</span>
+<span class="text-sm">Precision Level</span>
+</div>
+<select class="bg-transparent border-none text-xs text-primary font-bold focus:ring-0">
+<option>Nanosecond</option>
+<option>Millisecond</option>
+<option>Standard</option>
+</select>
+</div>
+<div class="flex items-center justify-between p-3 border border-slate-200 dark:border-slate-800 rounded-lg">
+<div class="flex items-center gap-2">
+<span class="material-icons text-primary">monitor</span>
+<span class="text-sm">Display Engine</span>
+</div>
+<span class="text-xs opacity-60">GPU Accelerated</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body></html>
