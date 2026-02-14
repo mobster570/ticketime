@@ -65,6 +65,34 @@ pnpm lint         # ESLint
 
 - `@/` maps to `./src/` (configured in tsconfig.app.json + vite.config.ts)
 
+## Commit Convention
+
+Follow the Udacity Git Commit Message Style Guide.
+
+```
+type: subject
+
+body (optional)
+
+footer (optional)
+```
+
+**Type:**
+- `feat`: new feature
+- `fix`: bug fix
+- `docs`: documentation changes
+- `style`: formatting, no code meaning change (whitespace, semicolons, etc.)
+- `refactor`: code change that neither fixes a bug nor adds a feature
+- `test`: add or modify tests
+- `chore`: build process, tooling, or dependency changes
+
+**Rules:**
+- Subject max 50 chars, lowercase start, no trailing period
+- Body explains what and why, not how
+- Use imperative mood (e.g. "add" not "added")
+- Always write commit messages in English
+- Always ask for user confirmation via AskUserQuestion before `git push`
+
 ## Key Architecture Notes
 
 - **Tauri IPC**: Frontend communicates with Rust backend via Tauri's `invoke()` command system
