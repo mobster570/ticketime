@@ -120,6 +120,7 @@ async fn find_second_offset(
                 "phase": "whole_second_offset",
                 "attempt": attempt,
                 "offset_seconds": offset,
+                "current_median_ms": latency.median * 1000.0,
             }));
 
             return Ok(offset);
@@ -220,6 +221,7 @@ async fn find_millisecond_offset(
             "right_bound_ms": right * 1000.0,
             "interval_width_ms": interval_width_ms,
             "convergence_percent": convergence_percent,
+            "current_median_ms": latency.median * 1000.0,
         }));
 
         previous_date = current_date;
@@ -265,6 +267,7 @@ async fn verify_offset(
                     "predicted": predicted,
                     "actual": actual,
                     "is_match": is_match,
+                    "current_median_ms": latency.median * 1000.0,
                 }));
 
                 if !is_match {
