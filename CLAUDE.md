@@ -37,8 +37,16 @@ ticketime-app/
 │   └── index.css         # Tailwind CSS entry
 ├── src-tauri/            # Backend (Rust)
 │   ├── src/
-│   │   ├── main.rs       # Tauri entry point
-│   │   └── lib.rs        # Library root
+│   │   ├── main.rs           # Tauri entry point
+│   │   ├── lib.rs            # Library root + module registration
+│   │   ├── error.rs          # Unified AppError (thiserror + Serialize)
+│   │   ├── models.rs         # Server, SyncResult, SyncEvent types
+│   │   ├── db.rs             # SQLite (Mutex<Connection>, WAL mode)
+│   │   ├── sync_engine.rs    # 4-phase sync algorithm
+│   │   ├── timing.rs         # Precision timing (busy-wait tail)
+│   │   ├── time_extractor.rs # TimeExtractor trait + DateHeaderExtractor
+│   │   ├── state.rs          # AppState (DB + active syncs)
+│   │   └── commands.rs       # Tauri IPC commands (6 commands)
 │   ├── Cargo.toml        # Rust dependencies
 │   └── tauri.conf.json   # Tauri configuration
 ├── docs/                 # Project documentation
@@ -59,6 +67,14 @@ pnpm tauri:dev    # Run app in dev mode (hot reload frontend + Rust backend)
 pnpm tauri:build  # Build production binary
 pnpm build        # Build frontend only (TypeScript check + Vite)
 pnpm lint         # ESLint
+```
+
+### Verification Commands
+
+```bash
+cd src-tauri && cargo check    # Rust type-check only (fast)
+npx tsc --noEmit               # TypeScript check without emit
+pnpm build                     # Full frontend build (tsc + vite)
 ```
 
 ## Path Aliases
@@ -92,6 +108,21 @@ footer (optional)
 - Use imperative mood (e.g. "add" not "added")
 - Always write commit messages in English
 - Always ask for user confirmation via AskUserQuestion before `git push`
+
+## Tauri v2 Gotchas
+
+- `use tauri::Manager;` is required for `app.manage()` — won't compile without it
+- Use `tauri::ipc::Channel<T>` for streaming progress (not `app.emit()`)
+- Spawned tasks access managed state via `AppHandle`: clone handle, then `handle.state::<T>()`
+- SQLite uses `std::sync::Mutex<Connection>` — wrap DB ops in `spawn_blocking` when called from spawned async tasks
+- Progress callbacks across async boundaries need `Send + Sync`: `Box<dyn Fn(T) + Send + Sync + 'static>`
+
+## Frontend Gotchas
+
+- Recharts v3: Tooltip `formatter` receives `number | undefined`, not `number` — use `Number(value)`
+- Tailwind CSS v4: uses `@import "tailwindcss"` and `@theme {}` directive for custom properties
+- Theme system: CSS custom properties in `:root` (light) / `.dark` (dark), toggled on `<html>` element
+- Always use `MemoryRouter` (not `BrowserRouter`) — Tauri uses `tauri://localhost` protocol
 
 ## Key Architecture Notes
 
