@@ -7,6 +7,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { TrendingDown } from "lucide-react";
 
 interface DataPoint {
   iteration: number;
@@ -21,10 +22,15 @@ export function ConvergenceChart({ data }: ConvergenceChartProps) {
   if (data.length === 0) return null;
 
   return (
-    <div className="space-y-2">
-      <h3 className="text-sm font-medium text-[var(--color-text-primary)]">
-        Convergence
-      </h3>
+    <div className="bg-[var(--color-bg-deep)] p-6 rounded-xl border border-[var(--color-border)]">
+      <div className="flex items-center gap-2 mb-4">
+        <div className="h-8 w-8 rounded-lg bg-[var(--color-accent)]/10 flex items-center justify-center">
+          <TrendingDown className="h-4 w-4 text-[var(--color-accent)]" />
+        </div>
+        <h3 className="text-sm font-semibold uppercase tracking-wider text-[var(--color-text-secondary)]">
+          Convergence
+        </h3>
+      </div>
       <div className="h-40">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data}>

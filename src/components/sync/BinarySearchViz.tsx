@@ -1,3 +1,5 @@
+import { Target } from "lucide-react";
+
 interface BinarySearchVizProps {
   leftBound: number;
   rightBound: number;
@@ -7,45 +9,49 @@ interface BinarySearchVizProps {
 export function BinarySearchViz({
   leftBound,
   rightBound,
-  iteration,
 }: BinarySearchVizProps) {
   const width = rightBound - leftBound;
   const leftPercent = (leftBound / 1000) * 100;
   const widthPercent = (width / 1000) * 100;
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-[var(--color-text-primary)]">
-          Binary Search Interval
-        </h3>
-        <span className="text-xs text-[var(--color-text-secondary)]">
-          Iteration {iteration}
+    <div className="bg-[var(--color-bg-deep)] p-6 rounded-xl border border-[var(--color-border)]">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <div className="h-8 w-8 rounded-lg bg-[var(--color-accent)]/10 flex items-center justify-center">
+            <Target className="h-4 w-4 text-[var(--color-accent)]" />
+          </div>
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-[var(--color-text-secondary)]">
+            Binary Search Interval
+          </h3>
+        </div>
+        <span className="text-xs font-mono text-[var(--color-text-secondary)]">
+          [{leftBound.toFixed(1)} ms, {rightBound.toFixed(1)} ms]
         </span>
       </div>
 
-      {/* Visual bar */}
-      <div className="relative h-8 w-full rounded bg-[var(--color-border)]">
-        <div
-          className="absolute top-0 h-full rounded bg-[var(--color-accent)]/30 border border-[var(--color-accent)] transition-all duration-300"
-          style={{
-            left: `${Math.max(0, leftPercent)}%`,
-            width: `${Math.max(1, widthPercent)}%`,
-          }}
-        />
+      {/* Visualization */}
+      <div className="relative">
+        {/* Search space rectangle - above the axis */}
+        <div className="relative h-8 mb-1">
+          <div
+            className="absolute top-0 h-full rounded bg-[var(--color-accent)]/20 border-2 border-[var(--color-accent)] transition-all duration-300"
+            style={{
+              left: `${Math.max(0, leftPercent)}%`,
+              width: `${Math.max(0.5, widthPercent)}%`,
+            }}
+          />
+        </div>
+
+        {/* Axis line */}
+        <div className="relative h-0.5 w-full bg-[var(--color-border)] rounded-full" />
       </div>
 
-      {/* Bounds display */}
-      <div className="flex items-center justify-between text-xs font-mono">
-        <span className="text-[var(--color-text-secondary)]">
-          LB: {leftBound.toFixed(1)} ms
-        </span>
-        <span className="text-[var(--color-accent)] font-medium">
-          Width: {width.toFixed(2)} ms
-        </span>
-        <span className="text-[var(--color-text-secondary)]">
-          UB: {rightBound.toFixed(1)} ms
-        </span>
+      {/* Bottom scale */}
+      <div className="flex justify-between text-[10px] font-mono text-[var(--color-text-secondary)]">
+        <span>0ms</span>
+        <span>500ms</span>
+        <span>1000ms</span>
       </div>
     </div>
   );

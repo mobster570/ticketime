@@ -1,5 +1,3 @@
-import { Activity, Clock, Heart, Timer } from "lucide-react";
-import { Card } from "@/components/ui/Card";
 import { useServerStore } from "@/stores/serverStore";
 import { useSyncStore } from "@/stores/syncStore";
 
@@ -27,48 +25,62 @@ export function StatsCards() {
     return elapsed < 5 * 60 * 1000;
   }).length;
 
-  const stats = [
-    {
-      label: "Active Nodes",
-      value: `${syncedCount}/${servers.length}`,
-      icon: Activity,
-      color: "text-[var(--color-accent)]",
-    },
-    {
-      label: "Net Offset",
-      value: offsets.length > 0 ? `${avgOffset >= 0 ? "+" : ""}${avgOffset.toFixed(1)} ms` : "N/A",
-      icon: Clock,
-      color: "text-[var(--color-warning)]",
-    },
-    {
-      label: "Health Status",
-      value: servers.length > 0 ? `${healthyCount}/${servers.length} Good` : "N/A",
-      icon: Heart,
-      color: "text-[var(--color-success)]",
-    },
-    {
-      label: "Avg Sync Time",
-      value: durations.length > 0 ? `${(avgDuration / 1000).toFixed(1)}s` : "N/A",
-      icon: Timer,
-      color: "text-purple-400",
-    },
-  ];
+  const isHealthy = servers.length > 0 && healthyCount === servers.length;
 
   return (
-    <div className="grid grid-cols-4 gap-4">
-      {stats.map((stat) => (
-        <Card key={stat.label} className="flex items-center gap-3">
-          <stat.icon className={`h-8 w-8 ${stat.color}`} />
-          <div>
-            <p className="text-xs text-[var(--color-text-secondary)]">
-              {stat.label}
-            </p>
-            <p className="text-lg font-semibold text-[var(--color-text-primary)]">
-              {stat.value}
-            </p>
-          </div>
-        </Card>
-      ))}
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
+      <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-card)] p-6">
+        <p className="mb-1 text-sm font-medium uppercase tracking-tight text-[var(--color-text-secondary)]">
+          Active Nodes
+        </p>
+        <p className="tabular-nums text-3xl font-bold text-[var(--color-text-primary)]">
+          {syncedCount}
+          <span className="ml-1 text-xl text-[var(--color-text-secondary)]">/ {servers.length}</span>
+        </p>
+      </div>
+
+      <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-card)] p-6">
+        <p className="mb-1 text-sm font-medium uppercase tracking-tight text-[var(--color-text-secondary)]">
+          Avg. Offset
+        </p>
+        <p className="tabular-nums text-3xl font-bold text-[var(--color-text-primary)]">
+          {offsets.length > 0 ? (
+            <>
+              {avgOffset >= 0 ? "+" : ""}{avgOffset.toFixed(1)}
+              <span className="ml-1 text-xl text-[var(--color-text-secondary)]">ms</span>
+            </>
+          ) : (
+            <span className="text-[var(--color-text-secondary)]">N/A</span>
+          )}
+        </p>
+      </div>
+
+      <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-card)] p-6">
+        <p className="mb-1 text-sm font-medium uppercase tracking-tight text-[var(--color-text-secondary)]">
+          Health Status
+        </p>
+        <p className={`text-3xl font-bold uppercase ${
+          isHealthy ? "text-emerald-400" : "text-[var(--color-warning)]"
+        }`}>
+          {servers.length > 0 ? (isHealthy ? "Stable" : "Degraded") : "N/A"}
+        </p>
+      </div>
+
+      <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-card)] p-6">
+        <p className="mb-1 text-sm font-medium uppercase tracking-tight text-[var(--color-text-secondary)]">
+          Avg Sync Time
+        </p>
+        <p className="tabular-nums text-3xl font-bold text-[var(--color-text-primary)]">
+          {durations.length > 0 ? (
+            <>
+              {(avgDuration / 1000).toFixed(1)}
+              <span className="ml-1 text-xl text-[var(--color-text-secondary)]">s</span>
+            </>
+          ) : (
+            <span className="text-[var(--color-text-secondary)]">N/A</span>
+          )}
+        </p>
+      </div>
     </div>
   );
 }

@@ -26,7 +26,7 @@ export function PhaseIndicator({ currentPhase }: PhaseIndicatorProps) {
             {i > 0 && (
               <div
                 className={cn(
-                  "h-0.5 w-8",
+                  "h-0.5 w-10",
                   isComplete
                     ? "bg-[var(--color-success)]"
                     : isCurrent
@@ -38,11 +38,11 @@ export function PhaseIndicator({ currentPhase }: PhaseIndicatorProps) {
             <div className="flex flex-col items-center gap-1">
               <div
                 className={cn(
-                  "flex h-7 w-7 items-center justify-center rounded-full text-xs font-medium",
+                  "flex h-8 w-8 items-center justify-center rounded-full text-xs font-medium",
                   isComplete
                     ? "bg-[var(--color-success)] text-white"
                     : isCurrent
-                      ? "bg-[var(--color-accent)] text-white"
+                      ? "bg-[var(--color-accent)] text-white glow-primary"
                       : "bg-[var(--color-border)] text-[var(--color-text-secondary)]",
                 )}
               >
@@ -50,9 +50,9 @@ export function PhaseIndicator({ currentPhase }: PhaseIndicatorProps) {
               </div>
               <span
                 className={cn(
-                  "text-[10px] whitespace-nowrap",
+                  "text-[10px] whitespace-nowrap uppercase tracking-wider font-medium",
                   isCurrent
-                    ? "text-[var(--color-accent)] font-medium"
+                    ? "text-[var(--color-accent)]"
                     : "text-[var(--color-text-secondary)]",
                 )}
               >

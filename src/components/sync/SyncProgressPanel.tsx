@@ -1,8 +1,6 @@
 import { useMemo } from "react";
-import { X, StopCircle } from "lucide-react";
+import { X, StopCircle, Timer } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
-import { PhaseIndicator } from "@/components/sync/PhaseIndicator";
 import { ProgressBar } from "@/components/sync/ProgressBar";
 import { BinarySearchViz } from "@/components/sync/BinarySearchViz";
 import { ConvergenceChart } from "@/components/sync/ConvergenceChart";
@@ -10,6 +8,7 @@ import { NetworkStats } from "@/components/sync/NetworkStats";
 import { PrecisionStatus } from "@/components/sync/PrecisionStatus";
 import { useSyncStore } from "@/stores/syncStore";
 import type { Server } from "@/types/server";
+import { cn } from "@/lib/utils";
 
 interface SyncProgressPanelProps {
   server: Server;
@@ -48,18 +47,39 @@ export function SyncProgressPanel({ server, onClose }: SyncProgressPanelProps) {
 
   const currentPhase = progress?.phase ?? (result ? "complete" : "idle");
 
+  // Get phase display name and color
+  const getPhaseDisplay = (phase: string) => {
+    const phases: Record<string, { label: string; color: string }> = {
+      latency_profiling: { label: "Latency Profiling", color: "var(--color-accent)" },
+      whole_second_offset: { label: "Whole-Second Offset", color: "var(--color-accent)" },
+      binary_search: { label: "Binary Search", color: "var(--color-accent)" },
+      verification: { label: "Verification", color: "var(--color-accent)" },
+      complete: { label: "Complete", color: "var(--color-success)" },
+      idle: { label: "Idle", color: "var(--color-text-secondary)" },
+    };
+    return phases[phase] ?? { label: phase, color: "var(--color-text-secondary)" };
+  };
+
+  const phaseDisplay = getPhaseDisplay(currentPhase);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <Card className="w-[800px] max-h-[90vh] overflow-y-auto bg-[var(--color-bg-secondary)] border-[var(--color-border)] p-0">
+    <div className="fixed inset-0 z-50 bg-[var(--color-bg-primary)]/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="w-full max-w-5xl bg-[var(--color-bg-card)] rounded-xl shadow-2xl border border-[var(--color-accent)]/20 overflow-hidden flex flex-col max-h-[90vh]">
+
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[var(--color-border)] px-6 py-4">
-          <div>
-            <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
-              {isActive ? "Synchronization in Progress" : result ? "Sync Complete" : "Sync"}
-            </h2>
-            <p className="text-sm text-[var(--color-text-secondary)]">
-              {server.url}
-            </p>
+        <div className="px-6 py-4 border-b border-[var(--color-accent)]/20 flex items-center justify-between bg-[var(--color-bg-deep)]">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-lg bg-[var(--color-accent)]/10 flex items-center justify-center">
+              <Timer className="h-5 w-5 text-[var(--color-accent)]" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
+                {isActive ? "Synchronization in Progress" : result ? "Sync Complete" : "Sync"}
+              </h2>
+              <p className="text-sm font-medium" style={{ color: phaseDisplay.color }}>
+                {phaseDisplay.label}
+              </p>
+            </div>
           </div>
           <button
             onClick={onClose}
@@ -69,100 +89,106 @@ export function SyncProgressPanel({ server, onClose }: SyncProgressPanelProps) {
           </button>
         </div>
 
-        {/* Body */}
-        <div className="p-6">
-          {/* Phase indicator */}
-          <div className="flex justify-center mb-6">
-            <PhaseIndicator currentPhase={currentPhase} />
+        {/* Content: 12-col grid with bg-grid-pattern */}
+        <div className="p-6 grid grid-cols-12 gap-6 bg-grid-pattern overflow-y-auto">
+          {/* Left column (col-span-8): Progress card + visualizations */}
+          <div className="col-span-8 space-y-6">
+            <ProgressBar
+              percent={progress?.progress_percent ?? (result ? 100 : 0)}
+              elapsedMs={progress?.elapsed_ms ?? (result?.duration_ms ?? 0)}
+            />
+
+            {/* Binary search viz (Phase 3 only) */}
+            {currentPhase === "binary_search" && (
+              <BinarySearchViz
+                leftBound={Number(phaseData.left_bound_ms ?? 0)}
+                rightBound={Number(phaseData.right_bound_ms ?? 1000)}
+                iteration={Number(phaseData.iteration ?? 0)}
+              />
+            )}
+
+            {/* Convergence chart */}
+            {convergenceData.length > 0 && (
+              <ConvergenceChart data={convergenceData} />
+            )}
+
+            {/* Result display */}
+            {result && !isActive && (
+              <div className="bg-[var(--color-bg-deep)] p-6 rounded-xl border border-[var(--color-border)]">
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-[var(--color-text-secondary)] mb-4">
+                  Sync Result
+                </h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-xs text-[var(--color-text-secondary)] uppercase tracking-wider font-medium mb-1">
+                      Total Offset
+                    </p>
+                    <p className="font-mono font-semibold text-lg text-[var(--color-accent)]">
+                      {result.total_offset_ms >= 0 ? "+" : ""}{result.total_offset_ms.toFixed(2)} ms
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-[var(--color-text-secondary)] uppercase tracking-wider font-medium mb-1">
+                      Duration
+                    </p>
+                    <p className="font-mono font-semibold text-lg text-[var(--color-text-primary)]">
+                      {(result.duration_ms / 1000).toFixed(1)}s
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-[var(--color-text-secondary)] uppercase tracking-wider font-medium mb-1">
+                      Verified
+                    </p>
+                    <p className={cn(
+                      "font-semibold text-lg",
+                      result.verified ? "text-[var(--color-success)]" : "text-[var(--color-danger)]"
+                    )}>
+                      {result.verified ? "Yes" : "No"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-[var(--color-text-secondary)] uppercase tracking-wider font-medium mb-1">
+                      Median RTT
+                    </p>
+                    <p className="font-mono font-semibold text-lg text-[var(--color-text-primary)]">
+                      {(result.latency_profile.median * 1000).toFixed(1)} ms
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Two-column layout */}
-          <div className="grid grid-cols-3 gap-6">
-            {/* Left column: progress + visualizations */}
-            <div className="col-span-2 space-y-6">
-              <ProgressBar
-                percent={progress?.progress_percent ?? (result ? 100 : 0)}
-                elapsedMs={progress?.elapsed_ms ?? (result?.duration_ms ?? 0)}
-              />
-
-              {/* Binary search viz (Phase 3 only) */}
-              {currentPhase === "binary_search" && (
-                <BinarySearchViz
-                  leftBound={Number(phaseData.left_bound_ms ?? 0)}
-                  rightBound={Number(phaseData.right_bound_ms ?? 1000)}
-                  iteration={Number(phaseData.iteration ?? 0)}
-                />
-              )}
-
-              {/* Convergence chart */}
-              {convergenceData.length > 0 && (
-                <ConvergenceChart data={convergenceData} />
-              )}
-
-              {/* Result display */}
-              {result && !isActive && (
-                <Card className="space-y-2">
-                  <h3 className="text-sm font-medium text-[var(--color-text-primary)]">
-                    Result
-                  </h3>
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div>
-                      <p className="text-[var(--color-text-secondary)]">Total Offset</p>
-                      <p className="font-mono font-semibold text-[var(--color-accent)]">
-                        {result.total_offset_ms >= 0 ? "+" : ""}{result.total_offset_ms.toFixed(2)} ms
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-[var(--color-text-secondary)]">Duration</p>
-                      <p className="font-mono text-[var(--color-text-primary)]">
-                        {(result.duration_ms / 1000).toFixed(1)}s
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-[var(--color-text-secondary)]">Verified</p>
-                      <p className={result.verified ? "text-[var(--color-success)]" : "text-[var(--color-danger)]"}>
-                        {result.verified ? "Yes" : "No"}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-[var(--color-text-secondary)]">Median RTT</p>
-                      <p className="font-mono text-[var(--color-text-primary)]">
-                        {(result.latency_profile.median * 1000).toFixed(1)} ms
-                      </p>
-                    </div>
-                  </div>
-                </Card>
-              )}
-            </div>
-
-            {/* Right column: stats */}
-            <div className="space-y-6">
-              <NetworkStats
-                serverUrl={server.url}
-                medianRtt={
-                  phaseData.current_median_ms
-                    ? Number(phaseData.current_median_ms) / 1000
-                    : result
-                      ? result.latency_profile.median
-                      : null
-                }
-                probeCount={Number(phaseData.probe_index ?? phaseData.iteration ?? 0)}
-              />
-              <PrecisionStatus
-                intervalWidth={
-                  phaseData.interval_width_ms !== undefined
-                    ? Number(phaseData.interval_width_ms)
+          {/* Right column (col-span-4): stats sidebar */}
+          <div className="col-span-4 space-y-6">
+            <PrecisionStatus
+              intervalWidth={
+                phaseData.interval_width_ms !== undefined
+                  ? Number(phaseData.interval_width_ms)
+                  : null
+              }
+              convergencePercent={Number(phaseData.convergence_percent ?? progress?.progress_percent ?? 0)}
+              verified={result?.verified ?? null}
+            />
+            <NetworkStats
+              serverUrl={server.url}
+              medianRtt={
+                phaseData.current_median_ms
+                  ? Number(phaseData.current_median_ms) / 1000
+                  : result
+                    ? result.latency_profile.median
                     : null
-                }
-                convergencePercent={Number(phaseData.convergence_percent ?? progress?.progress_percent ?? 0)}
-                verified={result?.verified ?? null}
-              />
-            </div>
+              }
+              probeCount={Number(phaseData.probe_index ?? phaseData.iteration ?? 0)}
+            />
           </div>
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 border-t border-[var(--color-border)] px-6 py-4">
+        <div className="bg-[var(--color-bg-deep)] px-6 py-4 border-t border-[var(--color-accent)]/20 flex justify-between items-center">
+          <div />
+
+          {/* cancel/close button */}
           {isActive ? (
             <Button variant="danger" onClick={handleCancel}>
               <StopCircle className="mr-1.5 h-4 w-4" />
@@ -174,7 +200,7 @@ export function SyncProgressPanel({ server, onClose }: SyncProgressPanelProps) {
             </Button>
           )}
         </div>
-      </Card>
+      </div>
     </div>
   );
 }

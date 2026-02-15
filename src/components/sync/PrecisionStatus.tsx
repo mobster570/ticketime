@@ -14,38 +14,43 @@ export function PrecisionStatus({
   const filledSegments = Math.round((confidence / 100) * segments);
 
   return (
-    <div className="space-y-3">
-      <h3 className="text-sm font-medium text-[var(--color-text-primary)]">
-        Precision
+    <div className="bg-[var(--color-accent)]/5 border border-[var(--color-accent)]/20 p-5 rounded-xl space-y-4">
+      <h3 className="text-xs font-bold text-[var(--color-accent)] uppercase tracking-widest">
+        Precision Status
       </h3>
 
       {/* Current margin */}
       <div>
-        <p className="text-xs text-[var(--color-text-secondary)]">
+        <p className="text-[10px] text-[var(--color-text-secondary)] uppercase tracking-wider font-medium mb-1">
           Current Margin
         </p>
-        <p className="text-lg font-mono font-semibold text-[var(--color-accent)]">
+        <p className="text-lg font-mono font-bold text-[var(--color-text-primary)]">
           {intervalWidth !== null
             ? intervalWidth < 1
-              ? `+/- ${(intervalWidth * 1000).toFixed(0)} us`
-              : `+/- ${intervalWidth.toFixed(2)} ms`
+              ? `±${(intervalWidth * 1000).toFixed(0)} `
+              : `±${intervalWidth.toFixed(2)} `
             : "--"}
+          {intervalWidth !== null && (
+            <span className="text-xs text-[var(--color-text-secondary)] font-normal">
+              {intervalWidth < 1 ? "μs" : "ms"}
+            </span>
+          )}
         </p>
       </div>
 
       {/* Confidence bar */}
       <div>
-        <p className="text-xs text-[var(--color-text-secondary)] mb-1">
-          Confidence
+        <p className="text-[10px] text-[var(--color-text-secondary)] uppercase tracking-wider font-medium mb-2">
+          Confidence Score
         </p>
         <div className="flex gap-1">
           {Array.from({ length: segments }).map((_, i) => (
             <div
               key={i}
-              className={`h-2 flex-1 rounded-sm ${
+              className={`w-4 h-1.5 rounded-full ${
                 i < filledSegments
                   ? "bg-[var(--color-accent)]"
-                  : "bg-[var(--color-border)]"
+                  : "bg-[var(--color-accent)]/20"
               }`}
             />
           ))}
@@ -54,12 +59,12 @@ export function PrecisionStatus({
 
       {/* Verification status */}
       {verified !== null && (
-        <div>
-          <p className="text-xs text-[var(--color-text-secondary)]">
+        <div className="pt-2 border-t border-[var(--color-accent)]/20">
+          <p className="text-[10px] text-[var(--color-text-secondary)] uppercase tracking-wider font-medium mb-1">
             Verification
           </p>
           <p
-            className={`text-sm font-medium ${
+            className={`text-sm font-semibold ${
               verified
                 ? "text-[var(--color-success)]"
                 : "text-[var(--color-danger)]"

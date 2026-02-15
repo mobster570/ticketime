@@ -3,12 +3,12 @@ import type { ServerStatus } from "@/types/server";
 
 const statusConfig: Record<
   ServerStatus,
-  { color: string; label: string }
+  { dotClass: string; textClass: string; label: string }
 > = {
-  idle: { color: "bg-gray-400", label: "Idle" },
-  syncing: { color: "bg-[var(--color-warning)]", label: "Syncing" },
-  synced: { color: "bg-[var(--color-success)]", label: "Synced" },
-  error: { color: "bg-[var(--color-danger)]", label: "Error" },
+  idle: { dotClass: "bg-gray-400", textClass: "text-gray-400", label: "Idle" },
+  syncing: { dotClass: "bg-[var(--color-warning)] glow-warning", textClass: "text-[var(--color-warning)]", label: "Syncing" },
+  synced: { dotClass: "bg-[var(--color-success)] glow-success", textClass: "text-[var(--color-success)]", label: "Synced" },
+  error: { dotClass: "bg-[var(--color-danger)]", textClass: "text-[var(--color-danger)]", label: "Error" },
 };
 
 interface StatusBadgeProps {
@@ -19,11 +19,11 @@ interface StatusBadgeProps {
 export function StatusBadge({ status, className }: StatusBadgeProps) {
   const config = statusConfig[status];
   return (
-    <span className={cn("inline-flex items-center gap-1.5 text-xs", className)}>
+    <span className={cn("inline-flex items-center gap-2", className)}>
       <span
-        className={cn("h-2 w-2 rounded-full", config.color)}
+        className={cn("h-2.5 w-2.5 rounded-full", config.dotClass)}
       />
-      <span className="text-[var(--color-text-secondary)]">{config.label}</span>
+      <span className={cn("text-xs font-bold uppercase", config.textClass)}>{config.label}</span>
     </span>
   );
 }

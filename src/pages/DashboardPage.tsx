@@ -20,16 +20,23 @@ export function DashboardPage() {
     : null;
 
   return (
-    <div className="flex-1 space-y-6 overflow-y-auto p-6">
-      <StatsCards />
-      <ServerTable onSyncClick={handleSyncClick} />
+    <div className="flex-1 overflow-y-auto p-8">
+      <div className="mx-auto max-w-7xl space-y-8">
+        <StatsCards />
 
-      {syncPanelServer && (
-        <SyncProgressPanel
-          server={syncPanelServer}
-          onClose={() => setSyncPanelServerId(null)}
-        />
-      )}
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold text-[var(--color-text-primary)]">Network Overview</h2>
+        </div>
+
+        <ServerTable onSyncClick={handleSyncClick} />
+
+        {syncPanelServer && (
+          <SyncProgressPanel
+            server={syncPanelServer}
+            onClose={() => setSyncPanelServerId(null)}
+          />
+        )}
+      </div>
     </div>
   );
 }
