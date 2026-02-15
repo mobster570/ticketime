@@ -1,0 +1,49 @@
+# Auto detect text files and ensure LF in the repo
+* text=auto eol=lf
+
+# Source code — always LF
+*.rs        text eol=lf
+*.ts        text eol=lf
+*.tsx       text eol=lf
+*.js        text eol=lf
+*.jsx       text eol=lf
+*.css       text eol=lf
+*.html      text eol=lf
+*.py        text eol=lf
+*.cpp       text eol=lf
+
+# Config / data
+*.json      text eol=lf
+*.toml      text eol=lf
+*.yaml      text eol=lf
+*.yml       text eol=lf
+
+# Documentation
+*.md        text eol=lf
+
+# Shell / CI
+*.sh        text eol=lf
+
+# Tauri / Vite / tooling
+*.conf      text eol=lf
+
+# Lockfiles — keep exact content, no diff noise
+pnpm-lock.yaml  text eol=lf -diff linguist-generated
+Cargo.lock      text eol=lf -diff linguist-generated
+
+# Binary files — never touch
+*.png       binary
+*.ico       binary
+*.svg       binary
+*.webp      binary
+*.jpg       binary
+*.jpeg      binary
+*.gif       binary
+*.woff      binary
+*.woff2     binary
+*.ttf       binary
+*.eot       binary
+*.dll       binary
+*.exe       binary
+*.lib       binary
+*.pdb       binary
