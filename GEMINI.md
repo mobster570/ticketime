@@ -27,6 +27,7 @@ See `docs/Ticketime_PRD.md` for full requirements and `docs/Ticketime_Synchroniz
 ticketime/
 ├── src/                  # Frontend (React + TypeScript)
 │   ├── components/       # Reusable UI components
+│   │   ├── server-detail/ # Server detail page components (10 files)
 │   ├── pages/            # Route-level page components
 │   ├── hooks/            # Custom React hooks
 │   ├── stores/           # Zustand state stores
@@ -46,7 +47,7 @@ ticketime/
 │   │   ├── timing.rs         # Precision timing (busy-wait tail)
 │   │   ├── time_extractor.rs # TimeExtractor trait + DateHeaderExtractor
 │   │   ├── state.rs          # AppState (DB + active syncs)
-│   │   └── commands.rs       # Tauri IPC commands (6 commands)
+│   │   └── commands.rs       # Tauri IPC commands (7 commands)
 │   ├── Cargo.toml        # Rust dependencies
 │   └── tauri.conf.json   # Tauri configuration
 ├── docs/                 # Project documentation
@@ -112,6 +113,8 @@ footer (optional)
 
 ## Tauri v2 Gotchas
 
+- Tauri v2 plugins (dialog, fs, etc.) require a capabilities file at `src-tauri/capabilities/default.json` with permissions like `"dialog:default"`, `"fs:default"`
+- Optional IPC params (`Option<T>` in Rust) must be explicitly passed as `null` from TypeScript, not omitted — omitting causes deserialization errors
 - `use tauri::Manager;` is required for `app.manage()` — won't compile without it
 - Use `tauri::ipc::Channel<T>` for streaming progress (not `app.emit()`)
 - Spawned tasks access managed state via `AppHandle`: clone handle, then `handle.state::<T>()`
@@ -121,6 +124,7 @@ footer (optional)
 ## Frontend Gotchas
 
 - Recharts v3: Tooltip `formatter` receives `number | undefined`, not `number` — use `Number(value)`
+- Recharts v3: Tooltip `labelFormatter` receives `ReactNode`, not `number` — use `Number(label)` to convert
 - Tailwind CSS v4: uses `@import "tailwindcss"` and `@theme {}` directive for custom properties
 - Theme system: CSS custom properties in `:root` (light) / `.dark` (dark), toggled on `<html>` element
 - Always use `MemoryRouter` (not `BrowserRouter`) — Tauri uses `tauri://localhost` protocol
