@@ -24,7 +24,7 @@ See `docs/Ticketime_PRD.md` for full requirements and `docs/Ticketime_Synchroniz
 ## Project Structure
 
 ```
-ticketime-app/
+ticketime/
 ├── src/                  # Frontend (React + TypeScript)
 │   ├── components/       # Reusable UI components
 │   ├── pages/            # Route-level page components
@@ -123,6 +123,10 @@ footer (optional)
 - Tailwind CSS v4: uses `@import "tailwindcss"` and `@theme {}` directive for custom properties
 - Theme system: CSS custom properties in `:root` (light) / `.dark` (dark), toggled on `<html>` element
 - Always use `MemoryRouter` (not `BrowserRouter`) — Tauri uses `tauri://localhost` protocol
+
+## AI Tool Routing
+
+- **IMPORTANT**: You **MUST** use Gemini (`ask_gemini`) for all vision, image generation, and design tasks.
 
 ## Key Architecture Notes
 
