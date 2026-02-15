@@ -72,16 +72,20 @@ async fn measure_latency(
     rtts.sort_by(|a, b| a.partial_cmp(b).unwrap());
     let n = rtts.len();
 
-    let q1_idx = n / 4;
-    let q3_idx = 3 * n / 4;
+    let quartile = |q: usize| -> f64 {
+        let index = (n - 1) as f64 * (q as f64 / 4.0);
+        let lo = index.floor() as usize;
+        let hi = index.ceil() as usize;
+        rtts[lo] + (rtts[hi] - rtts[lo]) * (index - lo as f64)
+    };
 
     let profile = LatencyProfile {
-        min: rtts[0],
-        q1: rtts[q1_idx],
-        median: rtts[n / 2],
+        min: quartile(0),
+        q1: quartile(1),
+        median: quartile(2),
         mean: rtts.iter().sum::<f64>() / n as f64,
-        q3: rtts[q3_idx],
-        max: rtts[n - 1],
+        q3: quartile(3),
+        max: quartile(4),
     };
 
     Ok(profile)
@@ -191,8 +195,9 @@ async fn find_millisecond_offset(
             precise_wait(MIN_INTERVAL_SECS);
         }
 
-        let wall_end = Instant::now();
-        let elapsed_seconds = (wall_end - wall_start).as_secs_f64().round() as i64;
+        // Do NOT use .round() (Rust rounds 0.5→1, causing ~500ms error) or
+        // floor-diff (overcounts when probes straddle a second boundary).
+        let elapsed_seconds = wall_start.elapsed().as_secs_f64() as i64;
         let date_change = current_date - previous_date;
 
         if date_change == elapsed_seconds {
