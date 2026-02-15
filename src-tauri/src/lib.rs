@@ -29,8 +29,11 @@ pub fn run() {
 
             Ok(())
         })
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_fs::init())
         .invoke_handler(tauri::generate_handler![
             commands::add_server,
+            commands::get_server,
             commands::list_servers,
             commands::delete_server,
             commands::start_sync,

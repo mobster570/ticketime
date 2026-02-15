@@ -197,38 +197,68 @@ impl Database {
         Ok(())
     }
 
-    pub fn get_sync_history(&self, server_id: i64) -> Result<Vec<SyncResult>, AppError> {
+    pub fn get_sync_history(
+        &self,
+        server_id: i64,
+        since: Option<&str>,
+        limit: Option<i64>,
+    ) -> Result<Vec<SyncResult>, AppError> {
         let conn = self.conn.lock().unwrap();
-        let mut stmt = conn.prepare(
+
+        let mut sql = String::from(
             "SELECT server_id, whole_second_offset, subsecond_offset, total_offset_ms, latency_profile_json, verified, synced_at, duration_ms, phase_reached
-             FROM sync_results WHERE server_id = ?1 ORDER BY synced_at DESC",
-        )?;
-        let results = stmt
-            .query_map(params![server_id], |row| {
-                let profile_json: String = row.get(4)?;
-                let synced_str: String = row.get(6)?;
-                Ok(SyncResult {
-                    server_id: row.get(0)?,
-                    whole_second_offset: row.get(1)?,
-                    subsecond_offset: row.get(2)?,
-                    total_offset_ms: row.get(3)?,
-                    latency_profile: serde_json::from_str(&profile_json).unwrap_or(LatencyProfile {
-                        min: 0.0,
-                        q1: 0.0,
-                        median: 0.0,
-                        mean: 0.0,
-                        q3: 0.0,
-                        max: 0.0,
-                    }),
-                    verified: row.get::<_, i32>(5)? != 0,
-                    synced_at: DateTime::parse_from_rfc3339(&synced_str)
-                        .map(|dt| dt.with_timezone(&Utc))
-                        .unwrap_or_else(|_| Utc::now()),
-                    duration_ms: row.get::<_, i64>(7)? as u64,
-                    phase_reached: row.get::<_, i32>(8)? as u8,
-                })
-            })?
-            .collect::<Result<Vec<_>, _>>()?;
+             FROM sync_results WHERE server_id = ?1",
+        );
+        if since.is_some() {
+            sql.push_str(" AND synced_at >= ?2");
+        }
+        sql.push_str(" ORDER BY synced_at DESC");
+        if limit.is_some() {
+            sql.push_str(if since.is_some() { " LIMIT ?3" } else { " LIMIT ?2" });
+        }
+
+        let mut stmt = conn.prepare(&sql)?;
+
+        let row_mapper = |row: &rusqlite::Row| {
+            let profile_json: String = row.get(4)?;
+            let synced_str: String = row.get(6)?;
+            Ok(SyncResult {
+                server_id: row.get(0)?,
+                whole_second_offset: row.get(1)?,
+                subsecond_offset: row.get(2)?,
+                total_offset_ms: row.get(3)?,
+                latency_profile: serde_json::from_str(&profile_json).unwrap_or(LatencyProfile {
+                    min: 0.0,
+                    q1: 0.0,
+                    median: 0.0,
+                    mean: 0.0,
+                    q3: 0.0,
+                    max: 0.0,
+                }),
+                verified: row.get::<_, i32>(5)? != 0,
+                synced_at: DateTime::parse_from_rfc3339(&synced_str)
+                    .map(|dt| dt.with_timezone(&Utc))
+                    .unwrap_or_else(|_| Utc::now()),
+                duration_ms: row.get::<_, i64>(7)? as u64,
+                phase_reached: row.get::<_, i32>(8)? as u8,
+            })
+        };
+
+        let results = match (since, limit) {
+            (Some(s), Some(l)) => stmt
+                .query_map(params![server_id, s, l], row_mapper)?
+                .collect::<Result<Vec<_>, _>>()?,
+            (Some(s), None) => stmt
+                .query_map(params![server_id, s], row_mapper)?
+                .collect::<Result<Vec<_>, _>>()?,
+            (None, Some(l)) => stmt
+                .query_map(params![server_id, l], row_mapper)?
+                .collect::<Result<Vec<_>, _>>()?,
+            (None, None) => stmt
+                .query_map(params![server_id], row_mapper)?
+                .collect::<Result<Vec<_>, _>>()?,
+        };
+
         Ok(results)
     }
 }

@@ -1,4 +1,5 @@
 import { Timer, LayoutDashboard, Activity, BarChart3, Settings } from "lucide-react";
+import { NavLink } from "react-router-dom";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { cn } from "@/lib/utils";
 
@@ -17,18 +18,22 @@ export function Sidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 space-y-2 px-4">
-        <a
-          href="#"
-          className={cn(
-            "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium",
-            "bg-[var(--color-accent)] text-white"
-          )}
+        <NavLink
+          to="/"
+          end
+          className={({ isActive }) =>
+            cn(
+              "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium",
+              isActive
+                ? "bg-[var(--color-accent)] text-white"
+                : "text-[var(--color-text-secondary)] hover:bg-[var(--color-card-highlight)]"
+            )
+          }
         >
           <LayoutDashboard className="h-5 w-5" />
           Dashboard
-        </a>
-        <a
-          href="#"
+        </NavLink>
+        <span
           className={cn(
             "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium",
             "text-[var(--color-text-secondary)] opacity-50 cursor-not-allowed"
@@ -36,9 +41,8 @@ export function Sidebar() {
         >
           <Activity className="h-5 w-5" />
           Events
-        </a>
-        <a
-          href="#"
+        </span>
+        <span
           className={cn(
             "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium",
             "text-[var(--color-text-secondary)] opacity-50 cursor-not-allowed"
@@ -46,9 +50,8 @@ export function Sidebar() {
         >
           <BarChart3 className="h-5 w-5" />
           Analytics
-        </a>
-        <a
-          href="#"
+        </span>
+        <span
           className={cn(
             "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium",
             "text-[var(--color-text-secondary)] opacity-50 cursor-not-allowed"
@@ -56,7 +59,7 @@ export function Sidebar() {
         >
           <Settings className="h-5 w-5" />
           Settings
-        </a>
+        </span>
       </nav>
 
       {/* Footer */}

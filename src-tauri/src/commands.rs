@@ -25,6 +25,11 @@ pub async fn add_server(url: String, state: State<'_, AppState>) -> Result<Serve
 }
 
 #[tauri::command]
+pub async fn get_server(id: i64, state: State<'_, AppState>) -> Result<Server, AppError> {
+    state.db.get_server(id)
+}
+
+#[tauri::command]
 pub async fn list_servers(state: State<'_, AppState>) -> Result<Vec<Server>, AppError> {
     state.db.list_servers()
 }
@@ -176,7 +181,9 @@ pub async fn cancel_sync(id: i64, state: State<'_, AppState>) -> Result<(), AppE
 #[tauri::command]
 pub async fn get_sync_history(
     id: i64,
+    since: Option<String>,
+    limit: Option<i64>,
     state: State<'_, AppState>,
 ) -> Result<Vec<SyncResult>, AppError> {
-    state.db.get_sync_history(id)
+    state.db.get_sync_history(id, since.as_deref(), limit)
 }

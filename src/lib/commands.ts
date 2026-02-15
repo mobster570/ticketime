@@ -5,6 +5,10 @@ export async function addServer(url: string): Promise<Server> {
   return invoke<Server>("add_server", { url });
 }
 
+export async function getServer(id: number): Promise<Server> {
+  return invoke<Server>("get_server", { id });
+}
+
 export async function listServers(): Promise<Server[]> {
   return invoke<Server[]>("list_servers");
 }
@@ -26,6 +30,13 @@ export async function cancelSync(id: number): Promise<void> {
   return invoke<void>("cancel_sync", { id });
 }
 
-export async function getSyncHistory(id: number): Promise<SyncResult[]> {
-  return invoke<SyncResult[]>("get_sync_history", { id });
+export async function getSyncHistory(
+  id: number,
+  options?: { since?: string; limit?: number },
+): Promise<SyncResult[]> {
+  return invoke<SyncResult[]>("get_sync_history", {
+    id,
+    since: options?.since ?? null,
+    limit: options?.limit ?? null,
+  });
 }

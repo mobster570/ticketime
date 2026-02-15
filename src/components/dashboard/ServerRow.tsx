@@ -1,4 +1,5 @@
-import { Play, Trash2, Loader2 } from "lucide-react";
+import { Play, Trash2, Loader2, ChevronRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import type { Server } from "@/types/server";
 import { useSyncStore } from "@/stores/syncStore";
 import { useServerStore } from "@/stores/serverStore";
@@ -33,6 +34,7 @@ interface ServerRowProps {
 }
 
 export function ServerRow({ server, onSyncClick }: ServerRowProps) {
+  const navigate = useNavigate();
   const { isSyncing } = useSyncStore();
   const { removeServer } = useServerStore();
   const health = getHealthLabel(server);
@@ -88,7 +90,10 @@ export function ServerRow({ server, onSyncClick }: ServerRowProps) {
   };
 
   return (
-    <tr className="hover:bg-[var(--color-card-highlight)] transition-colors group">
+    <tr
+      onClick={() => navigate(`/servers/${server.id}`)}
+      className="hover:bg-[var(--color-card-highlight)] transition-colors group cursor-pointer"
+    >
       <td className="px-6 py-5">
         {getStatusDisplay()}
       </td>
@@ -118,7 +123,7 @@ export function ServerRow({ server, onSyncClick }: ServerRowProps) {
       <td className="px-6 py-5 text-right">
         <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
-            onClick={() => onSyncClick(server.id)}
+            onClick={(e) => { e.stopPropagation(); onSyncClick(server.id); }}
             disabled={syncing}
             title="Sync"
             className="p-2 text-[var(--color-text-secondary)] hover:text-[var(--color-accent)] rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -130,12 +135,13 @@ export function ServerRow({ server, onSyncClick }: ServerRowProps) {
             )}
           </button>
           <button
-            onClick={handleDelete}
+            onClick={(e) => { e.stopPropagation(); handleDelete(); }}
             title="Delete"
             className="p-2 text-[var(--color-text-secondary)] hover:text-[var(--color-danger)] rounded-lg transition-colors"
           >
             <Trash2 className="h-4 w-4" />
           </button>
+          <ChevronRight className="h-4 w-4 text-[var(--color-text-secondary)] opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
       </td>
     </tr>
