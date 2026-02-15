@@ -69,9 +69,9 @@ impl LatencyProfile {
         self.q3 - self.q1
     }
 
-    pub fn is_in_range(&self, rtt: f64, margin: f64) -> bool {
-        let lower = self.q1 - margin * self.iqr();
-        let upper = self.q3 + margin * self.iqr();
+    pub fn is_in_range(&self, rtt: f64, multiplier: f64) -> bool {
+        let lower = self.q1 - multiplier * self.iqr();
+        let upper = self.q3 + multiplier * self.iqr();
         lower <= rtt && rtt <= upper
     }
 }

@@ -9,7 +9,7 @@ use tokio_util::sync::CancellationToken;
 const MAX_RETRIES: u32 = 10;
 const MIN_INTERVAL_SECS: f64 = 0.5;
 const DEFAULT_PROBE_COUNT: usize = 10;
-const IQR_MARGIN: f64 = 1.5;
+const IQR_MULTIPLIER: f64 = 1.5;
 
 /// Progress callback type
 pub type ProgressCallback = Box<dyn Fn(serde_json::Value) + Send + Sync + 'static>;
@@ -72,6 +72,7 @@ async fn measure_latency(
     rtts.sort_by(|a, b| a.partial_cmp(b).unwrap());
     let n = rtts.len();
 
+    // Linear-interpolated quartile matching the C++ reference.
     let quartile = |q: usize| -> f64 {
         let index = (n - 1) as f64 * (q as f64 / 4.0);
         let lo = index.floor() as usize;
@@ -112,7 +113,7 @@ async fn find_second_offset(
 
         let (server_second, rtt) = get_server_time(client, url, extractor).await?;
 
-        if latency.is_in_range(rtt, IQR_MARGIN) {
+        if latency.is_in_range(rtt, IQR_MULTIPLIER) {
             let offset = server_second - client_predicted_second;
 
             progress(serde_json::json!({
@@ -151,7 +152,7 @@ async fn find_millisecond_offset(
         wait_until_fraction(modulo(1.0 - half_rtt, 1.0));
 
         let (date, rtt) = get_server_time(client, url, extractor).await?;
-        if latency.is_in_range(rtt, IQR_MARGIN) {
+        if latency.is_in_range(rtt, IQR_MULTIPLIER) {
             previous_date = date;
             break;
         }
@@ -183,7 +184,7 @@ async fn find_millisecond_offset(
             wait_until_fraction(modulo(mid - half_rtt, 1.0));
 
             let (date, rtt) = get_server_time(client, url, extractor).await?;
-            if latency.is_in_range(rtt, IQR_MARGIN) {
+            if latency.is_in_range(rtt, IQR_MULTIPLIER) {
                 current_date = date;
                 break;
             }
@@ -195,6 +196,7 @@ async fn find_millisecond_offset(
             precise_wait(MIN_INTERVAL_SECS);
         }
 
+        // Truncation (as i64) matches the C++ reference: static_cast<time_t>(elapsed).
         // Do NOT use .round() (Rust rounds 0.5→1, causing ~500ms error) or
         // floor-diff (overcounts when probes straddle a second boundary).
         let elapsed_seconds = wall_start.elapsed().as_secs_f64() as i64;
@@ -254,7 +256,7 @@ async fn verify_offset(
 
             let (actual, rtt) = get_server_time(client, url, extractor).await?;
 
-            if latency.is_in_range(rtt, IQR_MARGIN) {
+            if latency.is_in_range(rtt, IQR_MULTIPLIER) {
                 let is_match = predicted == actual;
 
                 progress(serde_json::json!({
