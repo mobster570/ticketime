@@ -627,21 +627,31 @@ mod tests {
 
     #[test]
     fn test_simulated_clock_wait_until_fraction() {
-        let clock = SimulatedClock::new(1_000_000.0); // exactly on .000
-        clock.wait_until_fraction(0.3, 0.5);
-        // The guard (0.5) skips to the NEXT second's .3 because
-        // now+0.5 > target: 1e6+0.5 > 1e6+0.3.
-        // This is intentional — the real clock behaves identically.
-        assert!((clock.system_time_secs() - 1_000_001.3).abs() < 1e-10);
+        let clock = SimulatedClock::new(1_000_000.2);
+        clock.wait_until_fraction(0.3, 0.0);
+        // min_wait=0: not_before = 1_000_000.2, base_second = 1_000_000.0
+        // target = 1_000_000.3, not_before(1e6+0.2) < target(1e6+0.3) → no skip
+        assert!((clock.system_time_secs() - 1_000_000.3).abs() < 1e-10);
     }
 
     #[test]
     fn test_simulated_clock_wait_until_fraction_already_past() {
         let clock = SimulatedClock::new(1_000_000.6);
-        clock.wait_until_fraction(0.8, 0.5);
-        // now = 1_000_000.6, target = 1_000_000.8
-        // now + 0.5 = 1_000_001.1 > 1_000_000.8 → target += 1 → 1_000_001.8
-        assert!((clock.system_time_secs() - 1_000_001.8).abs() < 1e-10);
+        clock.wait_until_fraction(0.3, 0.0);
+        // min_wait=0: not_before = 1_000_000.6, base_second = 1_000_000.0
+        // target = 1_000_000.3, not_before(1e6+0.6) > target(1e6+0.3) → skip
+        // target = 1_000_001.3
+        assert!((clock.system_time_secs() - 1_000_001.3).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_simulated_clock_wait_until_fraction_with_min_wait() {
+        let clock = SimulatedClock::new(1_000_000.2);
+        clock.wait_until_fraction(0.3, 0.5);
+        // min_wait=0.5: not_before = 1_000_000.7, base_second = 1_000_000.0
+        // target = 1_000_000.3, not_before(1e6+0.7) > target(1e6+0.3) → skip
+        // target = 1_000_001.3
+        assert!((clock.system_time_secs() - 1_000_001.3).abs() < 1e-10);
     }
 
     // ── Phase 1: measure_latency ──
