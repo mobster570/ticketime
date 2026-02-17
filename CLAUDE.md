@@ -131,6 +131,7 @@ footer (optional)
 ## AI Tool Routing
 
 - **IMPORTANT**: You **MUST** use Gemini (`ask_gemini`) for all vision, image generation, and design tasks.
+- For UI/frontend work: use Gemini for initial design direction AND post-implementation review. Always close the loop with Gemini validation after UI changes are applied.
 
 ## Key Architecture Notes
 
