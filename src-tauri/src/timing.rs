@@ -3,7 +3,7 @@ use std::time::{Instant, SystemTime, UNIX_EPOCH};
 /// Always-positive modulo (mirrors Python `modulo` function).
 pub fn modulo(x: f64, y: f64) -> f64 {
     let result = x % y;
-    if (x < 0.0) != (y < 0.0) {
+    if result < 0.0 {
         result + y
     } else {
         result

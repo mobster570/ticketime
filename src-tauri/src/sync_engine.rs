@@ -597,6 +597,22 @@ mod tests {
         assert!((modulo(1.0, 1.0)).abs() < 1e-10);
     }
 
+    #[test]
+    fn test_modulo_negative_integer() {
+        // Critical edge case: when x is an exact negative multiple of y,
+        // modulo should return 0.0 (matching Python behavior), not y.
+        assert!(
+            (modulo(-1.0, 1.0)).abs() < 1e-10,
+            "modulo(-1.0, 1.0) should be 0.0, got {}",
+            modulo(-1.0, 1.0)
+        );
+        assert!(
+            (modulo(-2.0, 1.0)).abs() < 1e-10,
+            "modulo(-2.0, 1.0) should be 0.0, got {}",
+            modulo(-2.0, 1.0)
+        );
+    }
+
     // ── Unit tests: LatencyProfile ──
 
     #[test]
@@ -1079,6 +1095,39 @@ mod tests {
         assert!(
             (result.total_offset_ms - 1600.0).abs() < 2.0,
             "total offset should be ~1600ms with high latency, got {:.2}ms",
+            result.total_offset_ms
+        );
+        assert!(result.verified);
+    }
+
+    #[tokio::test]
+    async fn test_synchronize_extreme_latency_rtt_over_two_seconds() {
+        // Extreme latency: RTT = 2.5 seconds (half_rtt = 1.25s, exceeding 1 second)
+        // Uses server_offset = 5.9 which forces the binary search through
+        // mid = 0.25, triggering modulo(0.25 - 1.25, 1.0) = modulo(-1.0, 1.0).
+        let server_offset = 5.9;
+        let rtt = 2.500;
+        let clock = std::sync::Arc::new(SimulatedClock::new(1_000_000.0));
+
+        let mut rtts = generate_rtts(rtt, 0.050, 10); // Phase 1
+        rtts.extend(vec![rtt; 30]); // Phases 2-4
+        let server = SimulatedServer::new(clock.clone(), server_offset, rtts);
+        let token = CancellationToken::new();
+
+        let result = synchronize_with(
+            &server,
+            clock.as_ref(),
+            42,
+            "http://test",
+            &token,
+            &noop_progress(),
+        )
+        .await
+        .unwrap();
+
+        assert!(
+            (result.total_offset_ms - 5900.0).abs() < 2.0,
+            "total offset should be ~5900ms with extreme latency, got {:.2}ms",
             result.total_offset_ms
         );
         assert!(result.verified);
