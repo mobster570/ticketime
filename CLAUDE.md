@@ -46,7 +46,7 @@ ticketime/
 │   │   ├── error.rs          # Unified AppError (thiserror + Serialize)
 │   │   ├── models.rs         # Server, SyncResult, SyncEvent types
 │   │   ├── db.rs             # SQLite (Mutex<Connection>, WAL mode)
-│   │   ├── sync_engine.rs    # 4-phase sync algorithm
+│   │   ├── sync_engine.rs    # 4-phase sync algorithm (Clock/ServerProbe traits for testability)
 │   │   ├── timing.rs         # Precision timing (busy-wait tail)
 │   │   ├── time_extractor.rs # TimeExtractor trait + DateHeaderExtractor
 │   │   ├── state.rs          # AppState (DB + active syncs)
@@ -77,6 +77,8 @@ pnpm lint         # ESLint
 
 ```bash
 cd src-tauri && cargo check    # Rust type-check only (fast)
+cd src-tauri && cargo test --lib  # Run all Rust unit tests
+cd src-tauri && cargo test --lib sync_engine::tests  # Run specific module tests
 npx tsc --noEmit               # TypeScript check without emit
 pnpm build                     # Full frontend build (tsc + vite)
 ```
@@ -138,6 +140,12 @@ footer (optional)
 ## AI Tool Routing
 
 - **IMPORTANT**: When tasked with any frontend UI design work, you MUST NEVER design it yourself — you MUST ALWAYS use the `ask_gemini` tool to have Gemini handle all design decisions, no exceptions.
+
+## Rust Testing Patterns
+
+- `sync_engine.rs` uses `Clock` + `ServerProbe` traits for dependency injection — `SimulatedClock` and `SimulatedServer` enable testing without real I/O or sleeping
+- For dyn-compatible async trait methods, use `fn probe<'a>(&'a self, ...) -> Pin<Box<dyn Future<...> + Send + 'a>>` — no `async-trait` crate needed
+- Pre-existing unused warnings: `SyncPhase` enum in `models.rs`, `TimeExtractor::name()` in `time_extractor.rs`
 
 ## Key Architecture Notes
 
