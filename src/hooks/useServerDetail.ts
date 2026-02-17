@@ -56,7 +56,7 @@ export function useServerDetail(id: number): UseServerDetailReturn {
   }, [syncResult, refetch]);
 
   const latestResult =
-    syncHistory.length > 0 ? syncHistory[syncHistory.length - 1] : undefined;
+    syncHistory.length > 0 ? syncHistory[0] : undefined;
 
   return { server, syncHistory, latestResult, isLoading, error, refetch };
 }
