@@ -24,7 +24,9 @@ pub fn precise_wait(seconds: f64) {
 
 /// Wait until the system clock reaches a specific fractional-second position.
 /// `fraction` must be in [0, 1).
-pub fn wait_until_fraction(fraction: f64) {
+/// `min_wait` is the minimum seconds to wait before firing, acting as a rate
+/// limiter (e.g. 0.5 ensures at least ~0.5 s between probes).
+pub fn wait_until_fraction(fraction: f64, min_wait: f64) {
     assert!((0.0..1.0).contains(&fraction), "fraction must be in [0, 1)");
 
     let now = SystemTime::now()
@@ -32,12 +34,11 @@ pub fn wait_until_fraction(fraction: f64) {
         .expect("time went backwards")
         .as_secs_f64();
 
-    let current_second = now.floor();
-    let mut target = current_second + fraction;
+    let not_before = now + min_wait;
+    let base_second = not_before.floor();
+    let mut target = base_second + fraction;
 
-    // If we're already past that fraction in this second,
-    // aim for the same fraction in the next second
-    if now + 0.5 > target {
+    if not_before > target {
         target += 1.0;
     }
 

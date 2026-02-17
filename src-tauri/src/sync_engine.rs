@@ -26,7 +26,8 @@ pub(crate) trait Clock: Send + Sync {
     /// Wait for a specified duration in seconds.
     fn wait(&self, seconds: f64);
     /// Wait until the system clock reaches a specific fractional-second position.
-    fn wait_until_fraction(&self, fraction: f64);
+    /// `min_wait` is the minimum seconds to wait before firing (rate limiter).
+    fn wait_until_fraction(&self, fraction: f64, min_wait: f64);
 }
 
 /// Abstracts the HTTP probe so tests can simulate network behaviour.
@@ -62,8 +63,8 @@ impl Clock for RealClock {
     fn wait(&self, seconds: f64) {
         crate::timing::precise_wait(seconds);
     }
-    fn wait_until_fraction(&self, fraction: f64) {
-        crate::timing::wait_until_fraction(fraction);
+    fn wait_until_fraction(&self, fraction: f64, min_wait: f64) {
+        crate::timing::wait_until_fraction(fraction, min_wait);
     }
 }
 
@@ -169,7 +170,7 @@ async fn find_second_offset(
     for attempt in 0..MAX_RETRIES {
         check_cancelled(token)?;
 
-        clock.wait_until_fraction((1.0 - half_rtt).rem_euclid(1.0));
+        clock.wait_until_fraction((1.0 - half_rtt).rem_euclid(1.0), MIN_INTERVAL_SECS);
 
         let client_predicted_second = (clock.system_time_secs() + half_rtt) as i64;
 
@@ -212,7 +213,7 @@ async fn find_millisecond_offset(
     loop {
         check_cancelled(token)?;
 
-        clock.wait_until_fraction((1.0 - half_rtt).rem_euclid(1.0));
+        clock.wait_until_fraction((1.0 - half_rtt).rem_euclid(1.0), MIN_INTERVAL_SECS);
 
         let (date, rtt) = probe.probe(url).await?;
         if latency.is_in_range(rtt, IQR_MULTIPLIER) {
@@ -244,7 +245,7 @@ async fn find_millisecond_offset(
         loop {
             check_cancelled(token)?;
 
-            clock.wait_until_fraction((mid - half_rtt).rem_euclid(1.0));
+            clock.wait_until_fraction((mid - half_rtt).rem_euclid(1.0), MIN_INTERVAL_SECS);
 
             let (date, rtt) = probe.probe(url).await?;
             if latency.is_in_range(rtt, IQR_MULTIPLIER) {
@@ -314,7 +315,7 @@ async fn verify_offset(
         loop {
             check_cancelled(token)?;
 
-            clock.wait_until_fraction((-offset - half_rtt + shift).rem_euclid(1.0));
+            clock.wait_until_fraction((-offset - half_rtt + shift).rem_euclid(1.0), MIN_INTERVAL_SECS);
 
             let predicted = (clock.system_time_secs() + half_rtt + offset) as i64;
 
@@ -478,16 +479,16 @@ mod tests {
             }
         }
 
-        fn wait_until_fraction(&self, fraction: f64) {
+        fn wait_until_fraction(&self, fraction: f64, min_wait: f64) {
             assert!(
                 (0.0..1.0).contains(&fraction),
                 "fraction must be in [0, 1), got {fraction}"
             );
             let now = self.system_time_secs();
-            let current_second = now.floor();
-            let mut target = current_second + fraction;
-            // Mirror the real implementation's logic
-            if now + 0.5 > target {
+            let not_before = now + min_wait;
+            let base_second = not_before.floor();
+            let mut target = base_second + fraction;
+            if not_before > target {
                 target += 1.0;
             }
             let wait_duration = target - now;
@@ -627,9 +628,9 @@ mod tests {
     #[test]
     fn test_simulated_clock_wait_until_fraction() {
         let clock = SimulatedClock::new(1_000_000.0); // exactly on .000
-        clock.wait_until_fraction(0.3);
-        // The 500ms guard (mirroring production timing.rs) skips to the NEXT
-        // second's .3 because now+0.5 > target: 1e6+0.5 > 1e6+0.3.
+        clock.wait_until_fraction(0.3, 0.5);
+        // The guard (0.5) skips to the NEXT second's .3 because
+        // now+0.5 > target: 1e6+0.5 > 1e6+0.3.
         // This is intentional — the real clock behaves identically.
         assert!((clock.system_time_secs() - 1_000_001.3).abs() < 1e-10);
     }
@@ -637,7 +638,7 @@ mod tests {
     #[test]
     fn test_simulated_clock_wait_until_fraction_already_past() {
         let clock = SimulatedClock::new(1_000_000.6);
-        clock.wait_until_fraction(0.8);
+        clock.wait_until_fraction(0.8, 0.5);
         // now = 1_000_000.6, target = 1_000_000.8
         // now + 0.5 = 1_000_001.1 > 1_000_000.8 → target += 1 → 1_000_001.8
         assert!((clock.system_time_secs() - 1_000_001.8).abs() < 1e-10);
