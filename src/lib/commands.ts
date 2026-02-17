@@ -1,5 +1,6 @@
 import { invoke, Channel } from "@tauri-apps/api/core";
 import type { Server, SyncEvent, SyncResult } from "@/types/server";
+import type { Settings } from "@/types/settings";
 
 export async function addServer(url: string): Promise<Server> {
   return invoke<Server>("add_server", { url });
@@ -39,4 +40,12 @@ export async function getSyncHistory(
     since: options?.since ?? null,
     limit: options?.limit ?? null,
   });
+}
+
+export async function getSettings(): Promise<Settings> {
+  return invoke<Settings>("get_settings");
+}
+
+export async function updateSettings(settings: Settings): Promise<void> {
+  return invoke<void>("update_settings", { settings });
 }

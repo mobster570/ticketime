@@ -1,10 +1,11 @@
 import { create } from "zustand";
 
-type Theme = "dark" | "light";
+export type Theme = "dark" | "light";
 
 interface ThemeStore {
   theme: Theme;
   toggleTheme: () => void;
+  setTheme: (theme: Theme) => void;
   initTheme: () => void;
 }
 
@@ -26,6 +27,12 @@ export const useThemeStore = create<ThemeStore>((set, get) => ({
     applyTheme(next);
     localStorage.setItem(STORAGE_KEY, next);
     set({ theme: next });
+  },
+
+  setTheme: (theme: Theme) => {
+    applyTheme(theme);
+    localStorage.setItem(STORAGE_KEY, theme);
+    set({ theme });
   },
 
   initTheme: () => {

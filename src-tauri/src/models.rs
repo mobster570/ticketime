@@ -133,3 +133,42 @@ pub struct SyncErrorPayload {
     pub server_id: i64,
     pub error: String,
 }
+
+// ── App Settings ──
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AppSettings {
+    pub theme: String,
+    pub min_request_interval_ms: u32,
+    pub health_resync_threshold: u8,
+    pub external_time_source: String,
+    pub show_milliseconds: bool,
+    pub millisecond_precision: u8,
+    pub show_timezone_offset: bool,
+    pub overlay_opacity: u8,
+    pub overlay_auto_hide: bool,
+    pub overlay_always_on_top: bool,
+    pub alert_intervals: Vec<u32>,
+    pub alert_method: String,
+    pub drift_warning_threshold_ms: u32,
+}
+
+impl Default for AppSettings {
+    fn default() -> Self {
+        Self {
+            theme: "dark".to_string(),
+            min_request_interval_ms: 500,
+            health_resync_threshold: 50,
+            external_time_source: "ntp".to_string(),
+            show_milliseconds: true,
+            millisecond_precision: 3,
+            show_timezone_offset: false,
+            overlay_opacity: 75,
+            overlay_auto_hide: false,
+            overlay_always_on_top: true,
+            alert_intervals: vec![10, 5, 1],
+            alert_method: "both".to_string(),
+            drift_warning_threshold_ms: 1000,
+        }
+    }
+}

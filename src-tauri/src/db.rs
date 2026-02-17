@@ -1,7 +1,8 @@
 use crate::error::AppError;
-use crate::models::{LatencyProfile, Server, ServerStatus, SyncResult};
+use crate::models::{AppSettings, LatencyProfile, Server, ServerStatus, SyncResult};
 use chrono::{DateTime, Utc};
 use rusqlite::{params, Connection};
+use std::collections::HashMap;
 use std::sync::Mutex;
 use tauri::{AppHandle, Manager};
 
@@ -55,6 +56,11 @@ impl Database {
                 duration_ms INTEGER NOT NULL,
                 phase_reached INTEGER NOT NULL DEFAULT 0,
                 FOREIGN KEY (server_id) REFERENCES servers(id) ON DELETE CASCADE
+            );
+
+            CREATE TABLE IF NOT EXISTS settings (
+                key TEXT PRIMARY KEY,
+                value TEXT NOT NULL
             );",
         )?;
         Ok(())
@@ -194,6 +200,105 @@ impl Database {
                 result.phase_reached as i32,
             ],
         )?;
+        Ok(())
+    }
+
+    pub fn get_settings(&self) -> Result<AppSettings, AppError> {
+        let conn = self.conn.lock().unwrap();
+        let mut stmt = conn.prepare("SELECT key, value FROM settings")?;
+        let rows: HashMap<String, String> = stmt
+            .query_map([], |row| {
+                Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
+            })?
+            .filter_map(|r| r.ok())
+            .collect();
+
+        let defaults = AppSettings::default();
+
+        Ok(AppSettings {
+            theme: rows
+                .get("theme")
+                .cloned()
+                .unwrap_or(defaults.theme),
+            min_request_interval_ms: rows
+                .get("min_request_interval_ms")
+                .and_then(|v| v.parse().ok())
+                .unwrap_or(defaults.min_request_interval_ms),
+            health_resync_threshold: rows
+                .get("health_resync_threshold")
+                .and_then(|v| v.parse().ok())
+                .unwrap_or(defaults.health_resync_threshold),
+            external_time_source: rows
+                .get("external_time_source")
+                .cloned()
+                .unwrap_or(defaults.external_time_source),
+            show_milliseconds: rows
+                .get("show_milliseconds")
+                .map(|v| v == "true")
+                .unwrap_or(defaults.show_milliseconds),
+            millisecond_precision: rows
+                .get("millisecond_precision")
+                .and_then(|v| v.parse().ok())
+                .unwrap_or(defaults.millisecond_precision),
+            show_timezone_offset: rows
+                .get("show_timezone_offset")
+                .map(|v| v == "true")
+                .unwrap_or(defaults.show_timezone_offset),
+            overlay_opacity: rows
+                .get("overlay_opacity")
+                .and_then(|v| v.parse().ok())
+                .unwrap_or(defaults.overlay_opacity),
+            overlay_auto_hide: rows
+                .get("overlay_auto_hide")
+                .map(|v| v == "true")
+                .unwrap_or(defaults.overlay_auto_hide),
+            overlay_always_on_top: rows
+                .get("overlay_always_on_top")
+                .map(|v| v == "true")
+                .unwrap_or(defaults.overlay_always_on_top),
+            alert_intervals: rows
+                .get("alert_intervals")
+                .and_then(|v| serde_json::from_str(v).ok())
+                .unwrap_or(defaults.alert_intervals),
+            alert_method: rows
+                .get("alert_method")
+                .cloned()
+                .unwrap_or(defaults.alert_method),
+            drift_warning_threshold_ms: rows
+                .get("drift_warning_threshold_ms")
+                .and_then(|v| v.parse().ok())
+                .unwrap_or(defaults.drift_warning_threshold_ms),
+        })
+    }
+
+    pub fn update_settings(&self, settings: &AppSettings) -> Result<(), AppError> {
+        let conn = self.conn.lock().unwrap();
+        let tx = conn.unchecked_transaction()?;
+
+        let pairs: Vec<(&str, String)> = vec![
+            ("theme", settings.theme.clone()),
+            ("min_request_interval_ms", settings.min_request_interval_ms.to_string()),
+            ("health_resync_threshold", settings.health_resync_threshold.to_string()),
+            ("external_time_source", settings.external_time_source.clone()),
+            ("show_milliseconds", settings.show_milliseconds.to_string()),
+            ("millisecond_precision", settings.millisecond_precision.to_string()),
+            ("show_timezone_offset", settings.show_timezone_offset.to_string()),
+            ("overlay_opacity", settings.overlay_opacity.to_string()),
+            ("overlay_auto_hide", settings.overlay_auto_hide.to_string()),
+            ("overlay_always_on_top", settings.overlay_always_on_top.to_string()),
+            ("alert_intervals", serde_json::to_string(&settings.alert_intervals).unwrap_or_else(|_| "[]".to_string())),
+            ("alert_method", settings.alert_method.clone()),
+            ("drift_warning_threshold_ms", settings.drift_warning_threshold_ms.to_string()),
+        ];
+
+        for (key, value) in pairs {
+            tx.execute(
+                "INSERT OR REPLACE INTO settings (key, value) VALUES (?1, ?2)",
+                params![key, value],
+            )?;
+        }
+
+        tx.commit()?;
         Ok(())
     }
 

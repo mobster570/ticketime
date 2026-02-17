@@ -1,7 +1,7 @@
 use crate::error::AppError;
 use crate::models::{
-    Server, ServerStatus, SyncCompletePayload, SyncErrorPayload, SyncEvent, SyncProgressPayload,
-    SyncResult,
+    AppSettings, Server, ServerStatus, SyncCompletePayload, SyncErrorPayload, SyncEvent,
+    SyncProgressPayload, SyncResult,
 };
 use crate::state::AppState;
 use crate::sync_engine;
@@ -186,4 +186,17 @@ pub async fn get_sync_history(
     state: State<'_, AppState>,
 ) -> Result<Vec<SyncResult>, AppError> {
     state.db.get_sync_history(id, since.as_deref(), limit)
+}
+
+#[tauri::command]
+pub async fn get_settings(state: State<'_, AppState>) -> Result<AppSettings, AppError> {
+    state.db.get_settings()
+}
+
+#[tauri::command]
+pub async fn update_settings(
+    settings: AppSettings,
+    state: State<'_, AppState>,
+) -> Result<(), AppError> {
+    state.db.update_settings(&settings)
 }

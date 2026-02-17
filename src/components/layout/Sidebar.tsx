@@ -51,15 +51,20 @@ export function Sidebar() {
           <BarChart3 className="h-5 w-5" />
           Analytics
         </span>
-        <span
-          className={cn(
-            "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium",
-            "text-[var(--color-text-secondary)] opacity-50 cursor-not-allowed"
-          )}
+        <NavLink
+          to="/settings"
+          className={({ isActive }) =>
+            cn(
+              "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium",
+              isActive
+                ? "bg-[var(--color-accent)] text-white"
+                : "text-[var(--color-text-secondary)] hover:bg-[var(--color-card-highlight)]"
+            )
+          }
         >
           <Settings className="h-5 w-5" />
           Settings
-        </span>
+        </NavLink>
       </nav>
 
       {/* Footer */}
