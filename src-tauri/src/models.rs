@@ -105,10 +105,12 @@ pub enum SyncPhase {
 
 impl From<SyncPhase> for serde_json::Value {
     fn from(phase: SyncPhase) -> Self {
+        // SAFETY: Serializing a unit-variant enum to JSON is infallible.
         serde_json::to_value(phase).unwrap()
     }
 }
 
+// These integer values are persisted in SQLite. Do not reorder.
 impl From<SyncPhase> for i32 {
     fn from(phase: SyncPhase) -> Self {
         match phase {

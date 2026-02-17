@@ -70,10 +70,12 @@ pub async fn start_sync(
     // Progress callback sends through Channel
     let on_event_progress = on_event.clone();
     let progress_callback: sync_engine::ProgressCallback = Box::new(move |data| {
-        let phase: SyncPhase = data
-            .get("phase")
-            .and_then(|v| serde_json::from_value(v.clone()).ok())
-            .unwrap_or(SyncPhase::LatencyProfiling);
+        let phase: SyncPhase = serde_json::from_value(
+            data.get("phase")
+                .expect("progress data must contain phase")
+                .clone(),
+        )
+        .expect("progress phase must be a valid SyncPhase");
 
         let progress_percent = match phase {
             SyncPhase::LatencyProfiling => {

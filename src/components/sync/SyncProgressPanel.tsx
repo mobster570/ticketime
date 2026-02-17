@@ -7,7 +7,7 @@ import { ConvergenceChart } from "@/components/sync/ConvergenceChart";
 import { NetworkStats } from "@/components/sync/NetworkStats";
 import { PrecisionStatus } from "@/components/sync/PrecisionStatus";
 import { useSyncStore } from "@/stores/syncStore";
-import type { Server } from "@/types/server";
+import type { Server, SyncPhase } from "@/types/server";
 import { cn } from "@/lib/utils";
 
 interface SyncProgressPanelProps {
@@ -45,11 +45,11 @@ export function SyncProgressPanel({ server, onClose }: SyncProgressPanelProps) {
     onClose();
   };
 
-  const currentPhase = progress?.phase ?? (result ? "complete" : "idle");
+  const currentPhase: SyncPhase | "idle" = progress?.phase ?? (result ? "complete" : "idle");
 
   // Get phase display name and color
-  const getPhaseDisplay = (phase: string) => {
-    const phases: Record<string, { label: string; color: string }> = {
+  const getPhaseDisplay = (phase: SyncPhase | "idle") => {
+    const phases: Record<SyncPhase | "idle", { label: string; color: string }> = {
       latency_profiling: { label: "Latency Profiling", color: "var(--color-accent)" },
       whole_second_offset: { label: "Whole-Second Offset", color: "var(--color-accent)" },
       binary_search: { label: "Binary Search", color: "var(--color-accent)" },
@@ -57,7 +57,7 @@ export function SyncProgressPanel({ server, onClose }: SyncProgressPanelProps) {
       complete: { label: "Complete", color: "var(--color-success)" },
       idle: { label: "Idle", color: "var(--color-text-secondary)" },
     };
-    return phases[phase] ?? { label: phase, color: "var(--color-text-secondary)" };
+    return phases[phase];
   };
 
   const phaseDisplay = getPhaseDisplay(currentPhase);
