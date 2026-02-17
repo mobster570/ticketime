@@ -563,7 +563,7 @@ mod tests {
             .collect()
     }
 
-    // ── Unit tests: LatencyProfile ──
+    // ── LatencyProfile tests ──
 
     #[test]
     fn test_latency_profile_iqr() {
