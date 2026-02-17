@@ -27,7 +27,10 @@ See `docs/Ticketime_PRD.md` for full requirements and `docs/Ticketime_Synchroniz
 ticketime/
 ├── src/                  # Frontend (React + TypeScript)
 │   ├── components/       # Reusable UI components
-│   │   ├── server-detail/ # Server detail page components (10 files)
+│   │   ├── server-detail/ # Server detail page components
+│   │   ├── settings/      # SettingsSection, SettingsField
+│   │   ├── ui/            # Button, Card, Input, Toggle, Slider, Select, NumberInput, ThemeToggle
+│   │   └── layout/        # Sidebar, TopBar
 │   ├── pages/            # Route-level page components
 │   ├── hooks/            # Custom React hooks
 │   ├── stores/           # Zustand state stores
@@ -47,7 +50,7 @@ ticketime/
 │   │   ├── timing.rs         # Precision timing (busy-wait tail)
 │   │   ├── time_extractor.rs # TimeExtractor trait + DateHeaderExtractor
 │   │   ├── state.rs          # AppState (DB + active syncs)
-│   │   └── commands.rs       # Tauri IPC commands (7 commands)
+│   │   └── commands.rs       # Tauri IPC commands (9 commands)
 │   ├── Cargo.toml        # Rust dependencies
 │   └── tauri.conf.json   # Tauri configuration
 ├── docs/                 # Project documentation
@@ -119,6 +122,7 @@ footer (optional)
 - Spawned tasks access managed state via `AppHandle`: clone handle, then `handle.state::<T>()`
 - SQLite uses `std::sync::Mutex<Connection>` — wrap DB ops in `spawn_blocking` when called from spawned async tasks
 - Progress callbacks across async boundaries need `Send + Sync`: `Box<dyn Fn(T) + Send + Sync + 'static>`
+- For multi-row atomic writes in rusqlite, use `conn.unchecked_transaction()` — the checked variant requires `&mut` which conflicts with `Mutex<Connection>`
 
 ## Frontend Gotchas
 
@@ -127,6 +131,9 @@ footer (optional)
 - Tailwind CSS v4: uses `@import "tailwindcss"` and `@theme {}` directive for custom properties
 - Theme system: CSS custom properties in `:root` (light) / `.dark` (dark), toggled on `<html>` element
 - Always use `MemoryRouter` (not `BrowserRouter`) — Tauri uses `tauri://localhost` protocol
+- UI components extend native HTML element attributes (e.g., `InputHTMLAttributes<HTMLInputElement>`) and use `cn()` for className merging
+- Settings are stored in SQLite key-value table, not localStorage — `settingsStore` handles migration from localStorage on first fetch
+- Zustand stores use `getState()` for cross-store access (e.g., `useThemeStore.getState().setTheme()` from settingsStore)
 
 ## AI Tool Routing
 
