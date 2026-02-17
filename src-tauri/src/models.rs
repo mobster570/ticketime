@@ -88,12 +88,12 @@ pub struct SyncResult {
     pub verified: bool,
     pub synced_at: DateTime<Utc>,
     pub duration_ms: u64,
-    pub phase_reached: u8,
+    pub phase_reached: SyncPhase,
 }
 
 // ── Sync Phase ──
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "snake_case")]
 pub enum SyncPhase {
     LatencyProfiling,
@@ -101,6 +101,38 @@ pub enum SyncPhase {
     BinarySearch,
     Verification,
     Complete,
+}
+
+impl From<SyncPhase> for serde_json::Value {
+    fn from(phase: SyncPhase) -> Self {
+        serde_json::to_value(phase).unwrap()
+    }
+}
+
+impl From<SyncPhase> for i32 {
+    fn from(phase: SyncPhase) -> Self {
+        match phase {
+            SyncPhase::LatencyProfiling => 0,
+            SyncPhase::WholeSecondOffset => 1,
+            SyncPhase::BinarySearch => 2,
+            SyncPhase::Verification => 3,
+            SyncPhase::Complete => 4,
+        }
+    }
+}
+
+impl TryFrom<i32> for SyncPhase {
+    type Error = String;
+    fn try_from(v: i32) -> Result<Self, Self::Error> {
+        match v {
+            0 => Ok(SyncPhase::LatencyProfiling),
+            1 => Ok(SyncPhase::WholeSecondOffset),
+            2 => Ok(SyncPhase::BinarySearch),
+            3 => Ok(SyncPhase::Verification),
+            4 => Ok(SyncPhase::Complete),
+            other => Err(format!("unknown sync phase: {other}")),
+        }
+    }
 }
 
 // ── Sync Events (for Channel IPC) ──
@@ -116,7 +148,7 @@ pub enum SyncEvent {
 #[derive(Debug, Clone, Serialize)]
 pub struct SyncProgressPayload {
     pub server_id: i64,
-    pub phase: String,
+    pub phase: SyncPhase,
     pub progress_percent: f64,
     pub phase_data: serde_json::Value,
     pub elapsed_ms: u64,

@@ -1,5 +1,5 @@
 use crate::error::AppError;
-use crate::models::{AppSettings, LatencyProfile, Server, ServerStatus, SyncResult};
+use crate::models::{AppSettings, LatencyProfile, Server, ServerStatus, SyncPhase, SyncResult};
 use chrono::{DateTime, Utc};
 use rusqlite::{params, Connection};
 use std::collections::HashMap;
@@ -195,7 +195,7 @@ impl Database {
                 result.verified as i32,
                 result.synced_at.to_rfc3339(),
                 result.duration_ms as i64,
-                result.phase_reached as i32,
+                i32::from(result.phase_reached),
             ],
         )?;
         Ok(())
@@ -369,7 +369,13 @@ impl Database {
                     .map(|dt| dt.with_timezone(&Utc))
                     .unwrap_or_else(|_| Utc::now()),
                 duration_ms: row.get::<_, i64>(7)? as u64,
-                phase_reached: row.get::<_, i32>(8)? as u8,
+                phase_reached: SyncPhase::try_from(row.get::<_, i32>(8)?).map_err(|e| {
+                    rusqlite::Error::FromSqlConversionFailure(
+                        8,
+                        rusqlite::types::Type::Integer,
+                        Box::from(e),
+                    )
+                })?,
             })
         };
 

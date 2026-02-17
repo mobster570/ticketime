@@ -1,5 +1,5 @@
 use crate::error::AppError;
-use crate::models::{LatencyProfile, SyncResult};
+use crate::models::{LatencyProfile, SyncPhase, SyncResult};
 use crate::time_extractor::TimeExtractor;
 
 use chrono::Utc;
@@ -127,7 +127,7 @@ async fn measure_latency(
         let current_median = sorted[sorted.len() / 2];
 
         progress(serde_json::json!({
-            "phase": "latency_profiling",
+            "phase": SyncPhase::LatencyProfiling,
             "probe_index": i,
             "total_probes": DEFAULT_PROBE_COUNT,
             "rtt_ms": rtt * 1000.0,
@@ -187,7 +187,7 @@ async fn find_second_offset(
             let offset = server_second - client_predicted_second;
 
             progress(serde_json::json!({
-                "phase": "whole_second_offset",
+                "phase": SyncPhase::WholeSecondOffset,
                 "attempt": attempt,
                 "offset_seconds": offset,
                 "current_median_ms": latency.median * 1000.0,
@@ -285,7 +285,7 @@ async fn find_millisecond_offset(
         let convergence_percent = (1.0 - (right - left)) * 100.0;
 
         progress(serde_json::json!({
-            "phase": "binary_search",
+            "phase": SyncPhase::BinarySearch,
             "iteration": iteration,
             "left_bound_ms": left * 1000.0,
             "right_bound_ms": right * 1000.0,
@@ -335,7 +335,7 @@ async fn verify_offset(
                 let is_match = predicted == actual;
 
                 progress(serde_json::json!({
-                    "phase": "verification",
+                    "phase": SyncPhase::Verification,
                     "shift": shift,
                     "predicted": predicted,
                     "actual": actual,
@@ -395,7 +395,7 @@ async fn synchronize_with(
     let duration_ms = ((clock.monotonic_secs() - start) * 1000.0) as u64;
 
     progress(serde_json::json!({
-        "phase": "complete",
+        "phase": SyncPhase::Complete,
         "total_offset_ms": total_offset_ms,
         "verified": verified,
         "duration_ms": duration_ms,
@@ -410,7 +410,11 @@ async fn synchronize_with(
         verified,
         synced_at: Utc::now(),
         duration_ms,
-        phase_reached: if verified { 4 } else { 3 },
+        phase_reached: if verified {
+            SyncPhase::Complete
+        } else {
+            SyncPhase::Verification
+        },
     })
 }
 
@@ -962,7 +966,7 @@ mod tests {
             result.total_offset_ms
         );
         assert!(result.verified, "offset should be verified");
-        assert_eq!(result.phase_reached, 4);
+        assert_eq!(result.phase_reached, SyncPhase::Complete);
         assert!(result.duration_ms > 0, "duration should be positive");
     }
 
@@ -1143,11 +1147,14 @@ mod tests {
         let server = SimulatedServer::new(clock.clone(), server_offset, rtts);
         let token = CancellationToken::new();
 
-        let phases = std::sync::Arc::new(Mutex::new(Vec::<String>::new()));
+        let phases = std::sync::Arc::new(Mutex::new(Vec::<SyncPhase>::new()));
         let phases_clone = phases.clone();
         let progress: ProgressCallback = Box::new(move |val| {
-            if let Some(phase) = val.get("phase").and_then(|p| p.as_str()) {
-                phases_clone.lock().unwrap().push(phase.to_string());
+            if let Some(phase) = val
+                .get("phase")
+                .and_then(|p| serde_json::from_value(p.clone()).ok())
+            {
+                phases_clone.lock().unwrap().push(phase);
             }
         });
 
@@ -1164,23 +1171,23 @@ mod tests {
 
         let phases = phases.lock().unwrap();
         assert!(
-            phases.contains(&"latency_profiling".to_string()),
+            phases.contains(&SyncPhase::LatencyProfiling),
             "should report latency_profiling phase"
         );
         assert!(
-            phases.contains(&"whole_second_offset".to_string()),
+            phases.contains(&SyncPhase::WholeSecondOffset),
             "should report whole_second_offset phase"
         );
         assert!(
-            phases.contains(&"binary_search".to_string()),
+            phases.contains(&SyncPhase::BinarySearch),
             "should report binary_search phase"
         );
         assert!(
-            phases.contains(&"verification".to_string()),
+            phases.contains(&SyncPhase::Verification),
             "should report verification phase"
         );
         assert!(
-            phases.last() == Some(&"complete".to_string()),
+            phases.last() == Some(&SyncPhase::Complete),
             "last phase should be complete"
         );
     }

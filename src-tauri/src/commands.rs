@@ -1,6 +1,6 @@
 use crate::error::AppError;
 use crate::models::{
-    AppSettings, Server, ServerStatus, SyncCompletePayload, SyncErrorPayload, SyncEvent,
+    AppSettings, Server, ServerStatus, SyncCompletePayload, SyncErrorPayload, SyncEvent, SyncPhase,
     SyncProgressPayload, SyncResult,
 };
 use crate::state::AppState;
@@ -70,14 +70,13 @@ pub async fn start_sync(
     // Progress callback sends through Channel
     let on_event_progress = on_event.clone();
     let progress_callback: sync_engine::ProgressCallback = Box::new(move |data| {
-        let phase = data
+        let phase: SyncPhase = data
             .get("phase")
-            .and_then(|v| v.as_str())
-            .unwrap_or("unknown")
-            .to_string();
+            .and_then(|v| serde_json::from_value(v.clone()).ok())
+            .unwrap_or(SyncPhase::LatencyProfiling);
 
-        let progress_percent = match phase.as_str() {
-            "latency_profiling" => {
+        let progress_percent = match phase {
+            SyncPhase::LatencyProfiling => {
                 let idx = data
                     .get("probe_index")
                     .and_then(|v| v.as_f64())
@@ -88,17 +87,16 @@ pub async fn start_sync(
                     .unwrap_or(10.0);
                 (idx / total) * 25.0
             }
-            "whole_second_offset" => 30.0,
-            "binary_search" => {
+            SyncPhase::WholeSecondOffset => 30.0,
+            SyncPhase::BinarySearch => {
                 let convergence = data
                     .get("convergence_percent")
                     .and_then(|v| v.as_f64())
                     .unwrap_or(0.0);
                 35.0 + convergence * 0.55
             }
-            "verification" => 92.0,
-            "complete" => 100.0,
-            _ => 0.0,
+            SyncPhase::Verification => 92.0,
+            SyncPhase::Complete => 100.0,
         };
 
         let elapsed_ms = sync_start.elapsed().as_millis() as u64;

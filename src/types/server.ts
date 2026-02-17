@@ -36,12 +36,12 @@ export interface SyncResult {
   verified: boolean;
   synced_at: string;
   duration_ms: number;
-  phase_reached: number;
+  phase_reached: SyncPhase;
 }
 
 export interface SyncProgressPayload {
   server_id: number;
-  phase: string;
+  phase: SyncPhase;
   progress_percent: number;
   phase_data: Record<string, unknown>;
   elapsed_ms: number;
