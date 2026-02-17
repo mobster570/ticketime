@@ -1,15 +1,5 @@
 use std::time::{Instant, SystemTime, UNIX_EPOCH};
 
-/// Always-positive modulo (mirrors Python `modulo` function).
-pub fn modulo(x: f64, y: f64) -> f64 {
-    let result = x % y;
-    if result < 0.0 {
-        result + y
-    } else {
-        result
-    }
-}
-
 /// High-precision wait. Sleeps for the bulk of the duration via
 /// `std::thread::sleep`, then busy-waits the final 100ms for sub-ms accuracy.
 pub fn precise_wait(seconds: f64) {

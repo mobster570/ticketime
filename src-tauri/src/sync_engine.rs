@@ -1,7 +1,7 @@
 use crate::error::AppError;
 use crate::models::{LatencyProfile, SyncResult};
 use crate::time_extractor::TimeExtractor;
-use crate::timing::modulo;
+
 use chrono::Utc;
 use std::future::Future;
 use std::pin::Pin;
@@ -169,7 +169,7 @@ async fn find_second_offset(
     for attempt in 0..MAX_RETRIES {
         check_cancelled(token)?;
 
-        clock.wait_until_fraction(modulo(1.0 - half_rtt, 1.0));
+        clock.wait_until_fraction((1.0 - half_rtt).rem_euclid(1.0));
 
         let client_predicted_second = (clock.system_time_secs() + half_rtt) as i64;
 
@@ -212,7 +212,7 @@ async fn find_millisecond_offset(
     loop {
         check_cancelled(token)?;
 
-        clock.wait_until_fraction(modulo(1.0 - half_rtt, 1.0));
+        clock.wait_until_fraction((1.0 - half_rtt).rem_euclid(1.0));
 
         let (date, rtt) = probe.probe(url).await?;
         if latency.is_in_range(rtt, IQR_MULTIPLIER) {
@@ -244,7 +244,7 @@ async fn find_millisecond_offset(
         loop {
             check_cancelled(token)?;
 
-            clock.wait_until_fraction(modulo(mid - half_rtt, 1.0));
+            clock.wait_until_fraction((mid - half_rtt).rem_euclid(1.0));
 
             let (date, rtt) = probe.probe(url).await?;
             if latency.is_in_range(rtt, IQR_MULTIPLIER) {
@@ -314,7 +314,7 @@ async fn verify_offset(
         loop {
             check_cancelled(token)?;
 
-            clock.wait_until_fraction(modulo(-offset - half_rtt + shift, 1.0));
+            clock.wait_until_fraction((-offset - half_rtt + shift).rem_euclid(1.0));
 
             let predicted = (clock.system_time_secs() + half_rtt + offset) as i64;
 
@@ -574,43 +574,6 @@ mod tests {
                 base + sign * jitter * magnitude
             })
             .collect()
-    }
-
-    // ── Unit tests: modulo ──
-
-    #[test]
-    fn test_modulo_positive() {
-        assert!((modulo(5.3, 1.0) - 0.3).abs() < 1e-10);
-        assert!((modulo(2.7, 1.0) - 0.7).abs() < 1e-10);
-    }
-
-    #[test]
-    fn test_modulo_negative() {
-        // Python-style: modulo(-0.3, 1.0) == 0.7
-        assert!((modulo(-0.3, 1.0) - 0.7).abs() < 1e-10);
-        assert!((modulo(-5.825, 1.0) - 0.175).abs() < 1e-10);
-    }
-
-    #[test]
-    fn test_modulo_zero() {
-        assert!((modulo(0.0, 1.0)).abs() < 1e-10);
-        assert!((modulo(1.0, 1.0)).abs() < 1e-10);
-    }
-
-    #[test]
-    fn test_modulo_negative_integer() {
-        // Critical edge case: when x is an exact negative multiple of y,
-        // modulo should return 0.0 (matching Python behavior), not y.
-        assert!(
-            (modulo(-1.0, 1.0)).abs() < 1e-10,
-            "modulo(-1.0, 1.0) should be 0.0, got {}",
-            modulo(-1.0, 1.0)
-        );
-        assert!(
-            (modulo(-2.0, 1.0)).abs() < 1e-10,
-            "modulo(-2.0, 1.0) should be 0.0, got {}",
-            modulo(-2.0, 1.0)
-        );
     }
 
     // ── Unit tests: LatencyProfile ──
@@ -1104,7 +1067,7 @@ mod tests {
     async fn test_synchronize_extreme_latency_rtt_over_two_seconds() {
         // Extreme latency: RTT = 2.5 seconds (half_rtt = 1.25s, exceeding 1 second)
         // Uses server_offset = 5.9 which forces the binary search through
-        // mid = 0.25, triggering modulo(0.25 - 1.25, 1.0) = modulo(-1.0, 1.0).
+        // mid = 0.25, triggering (0.25 - 1.25).rem_euclid(1.0) = (-1.0).rem_euclid(1.0).
         let server_offset = 5.9;
         let rtt = 2.500;
         let clock = std::sync::Arc::new(SimulatedClock::new(1_000_000.0));
