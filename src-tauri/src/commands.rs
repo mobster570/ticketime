@@ -115,14 +115,16 @@ pub async fn start_sync(
     let handle = app_handle.clone();
 
     tokio::spawn(async move {
-        let result =
-            sync_engine::synchronize(id, &url, &extractor, token, progress_callback).await;
+        let result = sync_engine::synchronize(id, &url, &extractor, token, progress_callback).await;
 
         let app_state = handle.state::<AppState>();
 
         // Remove from active syncs first (always, regardless of result)
         {
-            let mut syncs = app_state.active_syncs.lock().expect("active_syncs poisoned");
+            let mut syncs = app_state
+                .active_syncs
+                .lock()
+                .expect("active_syncs poisoned");
             syncs.remove(&id);
         }
 

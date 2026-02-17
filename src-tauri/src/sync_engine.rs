@@ -322,7 +322,10 @@ async fn verify_offset(
         loop {
             check_cancelled(token)?;
 
-            clock.wait_until_fraction((-offset - half_rtt + shift).rem_euclid(1.0), MIN_INTERVAL_SECS);
+            clock.wait_until_fraction(
+                (-offset - half_rtt + shift).rem_euclid(1.0),
+                MIN_INTERVAL_SECS,
+            );
 
             let predicted = (clock.system_time_secs() + half_rtt + offset) as i64;
 
@@ -375,13 +378,11 @@ async fn synchronize_with(
 
     // Phase 2: Whole-Second Offset
     check_cancelled(token)?;
-    let second_offset =
-        find_second_offset(probe, clock, url, &latency, token, progress).await?;
+    let second_offset = find_second_offset(probe, clock, url, &latency, token, progress).await?;
 
     // Phase 3: Binary Search for Millisecond Offset
     check_cancelled(token)?;
-    let ms_offset =
-        find_millisecond_offset(probe, clock, url, &latency, token, progress).await?;
+    let ms_offset = find_millisecond_offset(probe, clock, url, &latency, token, progress).await?;
 
     let total_offset = second_offset as f64 + ms_offset;
     let total_offset_ms = total_offset * 1000.0;
@@ -502,11 +503,7 @@ mod tests {
     }
 
     impl SimulatedServer {
-        fn new(
-            clock: std::sync::Arc<SimulatedClock>,
-            server_offset: f64,
-            rtts: Vec<f64>,
-        ) -> Self {
+        fn new(clock: std::sync::Arc<SimulatedClock>, server_offset: f64, rtts: Vec<f64>) -> Self {
             Self {
                 clock,
                 server_offset,
@@ -655,10 +652,15 @@ mod tests {
         let server = SimulatedServer::new(clock.clone(), 0.0, rtts);
         let token = CancellationToken::new();
 
-        let profile =
-            measure_latency(&server, clock.as_ref(), "http://test", &token, &noop_progress())
-                .await
-                .unwrap();
+        let profile = measure_latency(
+            &server,
+            clock.as_ref(),
+            "http://test",
+            &token,
+            &noop_progress(),
+        )
+        .await
+        .unwrap();
 
         // Sorted RTTs: [0.048, 0.048, 0.049, 0.049, 0.050, 0.050, 0.051, 0.051, 0.052, 0.052]
         assert!(profile.min <= profile.q1);
@@ -915,7 +917,10 @@ mod tests {
         .await
         .unwrap();
 
-        assert!(!verified, "wrong offset (4.8 vs true 5.3) should fail verification");
+        assert!(
+            !verified,
+            "wrong offset (4.8 vs true 5.3) should fail verification"
+        );
     }
 
     // ── End-to-end synchronize ──

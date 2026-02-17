@@ -109,9 +109,7 @@ impl Database {
                     created_at: DateTime::parse_from_rfc3339(&created_str)
                         .map(|dt| dt.with_timezone(&Utc))
                         .unwrap_or_else(|_| Utc::now()),
-                    status: status_str
-                        .parse()
-                        .unwrap_or(ServerStatus::Idle),
+                    status: status_str.parse().unwrap_or(ServerStatus::Idle),
                     extractor_type: row.get(7)?,
                 })
             })?
@@ -183,8 +181,8 @@ impl Database {
 
     pub fn save_sync_result(&self, result: &SyncResult) -> Result<(), AppError> {
         let conn = self.conn.lock().unwrap();
-        let profile_json = serde_json::to_string(&result.latency_profile)
-            .unwrap_or_else(|_| "{}".to_string());
+        let profile_json =
+            serde_json::to_string(&result.latency_profile).unwrap_or_else(|_| "{}".to_string());
         conn.execute(
             "INSERT INTO sync_results (server_id, whole_second_offset, subsecond_offset, total_offset_ms, latency_profile_json, verified, synced_at, duration_ms, phase_reached)
              VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
@@ -216,10 +214,7 @@ impl Database {
         let defaults = AppSettings::default();
 
         Ok(AppSettings {
-            theme: rows
-                .get("theme")
-                .cloned()
-                .unwrap_or(defaults.theme),
+            theme: rows.get("theme").cloned().unwrap_or(defaults.theme),
             min_request_interval_ms: rows
                 .get("min_request_interval_ms")
                 .and_then(|v| v.parse().ok())
@@ -277,18 +272,43 @@ impl Database {
 
         let pairs: Vec<(&str, String)> = vec![
             ("theme", settings.theme.clone()),
-            ("min_request_interval_ms", settings.min_request_interval_ms.to_string()),
-            ("health_resync_threshold", settings.health_resync_threshold.to_string()),
-            ("external_time_source", settings.external_time_source.clone()),
+            (
+                "min_request_interval_ms",
+                settings.min_request_interval_ms.to_string(),
+            ),
+            (
+                "health_resync_threshold",
+                settings.health_resync_threshold.to_string(),
+            ),
+            (
+                "external_time_source",
+                settings.external_time_source.clone(),
+            ),
             ("show_milliseconds", settings.show_milliseconds.to_string()),
-            ("millisecond_precision", settings.millisecond_precision.to_string()),
-            ("show_timezone_offset", settings.show_timezone_offset.to_string()),
+            (
+                "millisecond_precision",
+                settings.millisecond_precision.to_string(),
+            ),
+            (
+                "show_timezone_offset",
+                settings.show_timezone_offset.to_string(),
+            ),
             ("overlay_opacity", settings.overlay_opacity.to_string()),
             ("overlay_auto_hide", settings.overlay_auto_hide.to_string()),
-            ("overlay_always_on_top", settings.overlay_always_on_top.to_string()),
-            ("alert_intervals", serde_json::to_string(&settings.alert_intervals).unwrap_or_else(|_| "[]".to_string())),
+            (
+                "overlay_always_on_top",
+                settings.overlay_always_on_top.to_string(),
+            ),
+            (
+                "alert_intervals",
+                serde_json::to_string(&settings.alert_intervals)
+                    .unwrap_or_else(|_| "[]".to_string()),
+            ),
             ("alert_method", settings.alert_method.clone()),
-            ("drift_warning_threshold_ms", settings.drift_warning_threshold_ms.to_string()),
+            (
+                "drift_warning_threshold_ms",
+                settings.drift_warning_threshold_ms.to_string(),
+            ),
         ];
 
         for (key, value) in pairs {
@@ -319,7 +339,11 @@ impl Database {
         }
         sql.push_str(" ORDER BY synced_at DESC");
         if limit.is_some() {
-            sql.push_str(if since.is_some() { " LIMIT ?3" } else { " LIMIT ?2" });
+            sql.push_str(if since.is_some() {
+                " LIMIT ?3"
+            } else {
+                " LIMIT ?2"
+            });
         }
 
         let mut stmt = conn.prepare(&sql)?;
