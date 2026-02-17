@@ -22,29 +22,6 @@ pub fn precise_wait(seconds: f64) {
     }
 }
 
-/// Wait until the system clock reaches a specific fractional-second position.
-/// `fraction` must be in [0, 1).
-/// `min_wait` is the minimum seconds to wait before firing, acting as a rate
-/// limiter (e.g. 0.5 ensures at least ~0.5 s between probes).
-pub fn wait_until_fraction(fraction: f64, min_wait: f64) {
-    assert!((0.0..1.0).contains(&fraction), "fraction must be in [0, 1)");
-
-    let now = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .expect("time went backwards")
-        .as_secs_f64();
-
-    let not_before = now + min_wait;
-    let base_second = not_before.floor();
-    let mut target = base_second + fraction;
-
-    if not_before > target {
-        target += 1.0;
-    }
-
-    precise_wait(target - now);
-}
-
 /// Get the current system time as seconds since UNIX epoch (f64).
 pub fn system_time_secs() -> f64 {
     SystemTime::now()

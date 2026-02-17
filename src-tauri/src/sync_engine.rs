@@ -27,7 +27,17 @@ pub(crate) trait Clock: Send + Sync {
     fn wait(&self, seconds: f64);
     /// Wait until the system clock reaches a specific fractional-second position.
     /// `min_wait` is the minimum seconds to wait before firing (rate limiter).
-    fn wait_until_fraction(&self, fraction: f64, min_wait: f64);
+    fn wait_until_fraction(&self, fraction: f64, min_wait: f64) {
+        assert!((0.0..1.0).contains(&fraction), "fraction must be in [0, 1)");
+        let now = self.system_time_secs();
+        let not_before = now + min_wait;
+        let base_second = not_before.floor();
+        let mut target = base_second + fraction;
+        if not_before > target {
+            target += 1.0;
+        }
+        self.wait(target - now);
+    }
 }
 
 /// Abstracts the HTTP probe so tests can simulate network behaviour.
@@ -62,9 +72,6 @@ impl Clock for RealClock {
     }
     fn wait(&self, seconds: f64) {
         crate::timing::precise_wait(seconds);
-    }
-    fn wait_until_fraction(&self, fraction: f64, min_wait: f64) {
-        crate::timing::wait_until_fraction(fraction, min_wait);
     }
 }
 
@@ -476,24 +483,6 @@ mod tests {
         fn wait(&self, seconds: f64) {
             if seconds > 0.0 {
                 self.advance(seconds);
-            }
-        }
-
-        fn wait_until_fraction(&self, fraction: f64, min_wait: f64) {
-            assert!(
-                (0.0..1.0).contains(&fraction),
-                "fraction must be in [0, 1), got {fraction}"
-            );
-            let now = self.system_time_secs();
-            let not_before = now + min_wait;
-            let base_second = not_before.floor();
-            let mut target = base_second + fraction;
-            if not_before > target {
-                target += 1.0;
-            }
-            let wait_duration = target - now;
-            if wait_duration > 0.0 {
-                self.advance(wait_duration);
             }
         }
     }
