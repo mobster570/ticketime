@@ -81,6 +81,8 @@ cd src-tauri && cargo test --lib  # Run all Rust unit tests
 cd src-tauri && cargo test --lib sync_engine::tests  # Run specific module tests
 npx tsc --noEmit               # TypeScript check without emit
 pnpm build                     # Full frontend build (tsc + vite)
+pnpm test                      # Run all frontend tests (vitest)
+pnpm test:watch                # Run frontend tests in watch mode
 ```
 
 ## Path Aliases
@@ -141,10 +143,19 @@ footer (optional)
 
 - **IMPORTANT**: When tasked with any frontend UI design work, you MUST NEVER design it yourself — you MUST ALWAYS use the `ask_gemini` tool to have Gemini handle all design decisions, no exceptions.
 
+## Frontend Testing
+
+- Framework: Vitest + @testing-library/react + jsdom
+- Config: `vitest.config.ts` (jsdom env, `@/` alias, setup file)
+- Setup: `src/test-setup.ts` (jest-dom matchers)
+- Test location: `src/**/__tests__/*.test.ts` (colocated `__tests__` dirs)
+- `themeStore.setTheme()` writes to `localStorage("ticketime-theme")` — tests checking localStorage after settingsStore operations must account for this
+
 ## Rust Testing Patterns
 
 - `sync_engine.rs` uses `Clock` + `ServerProbe` traits for dependency injection — `SimulatedClock` and `SimulatedServer` enable testing without real I/O or sleeping
 - For dyn-compatible async trait methods, use `fn probe<'a>(&'a self, ...) -> Pin<Box<dyn Future<...> + Send + 'a>>` — no `async-trait` crate needed
+- `db.rs` has a `#[cfg(test)] new_in_memory()` constructor — use this for isolated DB tests without Tauri AppHandle
 - Pre-existing unused warnings: `SyncPhase` enum in `models.rs`, `TimeExtractor::name()` in `time_extractor.rs`
 
 ## Key Architecture Notes

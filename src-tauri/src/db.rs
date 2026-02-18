@@ -397,3 +397,247 @@ impl Database {
         Ok(results)
     }
 }
+
+#[cfg(test)]
+impl Database {
+    pub fn new_in_memory() -> Result<Self, AppError> {
+        let conn = Connection::open_in_memory()?;
+        conn.execute_batch("PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON;")?;
+        let db = Self {
+            conn: Mutex::new(conn),
+        };
+        db.run_migrations()?;
+        Ok(db)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::models::{AppSettings, LatencyProfile, ServerStatus, SyncPhase, SyncResult};
+    use chrono::{Duration, Utc};
+
+    fn make_test_sync_result(server_id: i64, offset_ms: f64, synced_at: chrono::DateTime<Utc>) -> SyncResult {
+        SyncResult {
+            server_id,
+            whole_second_offset: (offset_ms / 1000.0) as i64,
+            subsecond_offset: (offset_ms % 1000.0) / 1000.0,
+            total_offset_ms: offset_ms,
+            latency_profile: LatencyProfile {
+                min: 0.040,
+                q1: 0.045,
+                median: 0.050,
+                mean: 0.050,
+                q3: 0.055,
+                max: 0.060,
+            },
+            verified: true,
+            synced_at,
+            duration_ms: 5000,
+            phase_reached: SyncPhase::Complete,
+        }
+    }
+
+    #[test]
+    fn test_add_server_returns_correct_fields() {
+        let db = Database::new_in_memory().unwrap();
+        let server = db.add_server("https://example.com").unwrap();
+        assert!(server.id > 0);
+        assert_eq!(server.url, "https://example.com");
+        assert_eq!(server.status, ServerStatus::Idle);
+        assert_eq!(server.extractor_type, "date_header");
+        assert!(server.offset_ms.is_none());
+        assert!(server.last_sync_at.is_none());
+        assert!(server.name.is_none());
+    }
+
+    #[test]
+    fn test_add_server_duplicate_url_returns_err() {
+        let db = Database::new_in_memory().unwrap();
+        db.add_server("https://example.com").unwrap();
+        let result = db.add_server("https://example.com");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_list_servers_empty_initially() {
+        let db = Database::new_in_memory().unwrap();
+        let servers = db.list_servers().unwrap();
+        assert!(servers.is_empty());
+    }
+
+    #[test]
+    fn test_list_servers_returns_added_servers_in_order() {
+        let db = Database::new_in_memory().unwrap();
+        db.add_server("https://alpha.example.com").unwrap();
+        db.add_server("https://beta.example.com").unwrap();
+        let servers = db.list_servers().unwrap();
+        assert_eq!(servers.len(), 2);
+        assert_eq!(servers[0].url, "https://alpha.example.com");
+        assert_eq!(servers[1].url, "https://beta.example.com");
+    }
+
+    #[test]
+    fn test_get_server_retrieves_by_id() {
+        let db = Database::new_in_memory().unwrap();
+        let added = db.add_server("https://example.com").unwrap();
+        let fetched = db.get_server(added.id).unwrap();
+        assert_eq!(fetched.id, added.id);
+        assert_eq!(fetched.url, "https://example.com");
+    }
+
+    #[test]
+    fn test_get_server_not_found_returns_err() {
+        let db = Database::new_in_memory().unwrap();
+        let result = db.get_server(9999);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_delete_server_removes_it() {
+        let db = Database::new_in_memory().unwrap();
+        let server = db.add_server("https://example.com").unwrap();
+        db.delete_server(server.id).unwrap();
+        let result = db.get_server(server.id);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_update_server_offset_updates_fields() {
+        let db = Database::new_in_memory().unwrap();
+        let server = db.add_server("https://example.com").unwrap();
+        let now = Utc::now();
+        db.update_server_offset(server.id, 42.5, now).unwrap();
+        let updated = db.get_server(server.id).unwrap();
+        assert!((updated.offset_ms.unwrap() - 42.5).abs() < 0.001);
+        assert!(updated.last_sync_at.is_some());
+    }
+
+    #[test]
+    fn test_update_server_status_changes_status() {
+        let db = Database::new_in_memory().unwrap();
+        let server = db.add_server("https://example.com").unwrap();
+        db.update_server_status(server.id, &ServerStatus::Syncing).unwrap();
+        let updated = db.get_server(server.id).unwrap();
+        assert_eq!(updated.status, ServerStatus::Syncing);
+    }
+
+    #[test]
+    fn test_save_and_retrieve_sync_result() {
+        let db = Database::new_in_memory().unwrap();
+        let server = db.add_server("https://example.com").unwrap();
+        let now = Utc::now();
+        let result = make_test_sync_result(server.id, 150.0, now);
+        db.save_sync_result(&result).unwrap();
+
+        let history = db.get_sync_history(server.id, None, None).unwrap();
+        assert_eq!(history.len(), 1);
+        let r = &history[0];
+        assert_eq!(r.server_id, server.id);
+        assert!((r.total_offset_ms - 150.0).abs() < 0.001);
+        assert_eq!(r.verified, true);
+        assert_eq!(r.duration_ms, 5000);
+        assert_eq!(r.phase_reached, SyncPhase::Complete);
+        assert!((r.latency_profile.median - 0.050).abs() < 0.0001);
+    }
+
+    #[test]
+    fn test_get_sync_history_respects_limit() {
+        let db = Database::new_in_memory().unwrap();
+        let server = db.add_server("https://example.com").unwrap();
+        let base = Utc::now();
+        for i in 0..5i64 {
+            let r = make_test_sync_result(server.id, i as f64 * 10.0, base + Duration::seconds(i));
+            db.save_sync_result(&r).unwrap();
+        }
+        let history = db.get_sync_history(server.id, None, Some(2)).unwrap();
+        assert_eq!(history.len(), 2);
+    }
+
+    #[test]
+    fn test_get_sync_history_filters_by_since() {
+        let db = Database::new_in_memory().unwrap();
+        let server = db.add_server("https://example.com").unwrap();
+        let base = Utc::now();
+        // Insert one old result and one recent result
+        let old_result = make_test_sync_result(server.id, 10.0, base - Duration::hours(2));
+        let new_result = make_test_sync_result(server.id, 20.0, base);
+        db.save_sync_result(&old_result).unwrap();
+        db.save_sync_result(&new_result).unwrap();
+
+        let cutoff = (base - Duration::hours(1)).to_rfc3339();
+        let history = db.get_sync_history(server.id, Some(&cutoff), None).unwrap();
+        assert_eq!(history.len(), 1);
+        assert!((history[0].total_offset_ms - 20.0).abs() < 0.001);
+    }
+
+    #[test]
+    fn test_get_sync_history_ordered_desc() {
+        let db = Database::new_in_memory().unwrap();
+        let server = db.add_server("https://example.com").unwrap();
+        let base = Utc::now();
+        for i in 0..3i64 {
+            let r = make_test_sync_result(server.id, i as f64 * 10.0, base + Duration::seconds(i));
+            db.save_sync_result(&r).unwrap();
+        }
+        let history = db.get_sync_history(server.id, None, None).unwrap();
+        // Most recent first
+        assert!(history[0].synced_at >= history[1].synced_at);
+        assert!(history[1].synced_at >= history[2].synced_at);
+    }
+
+    #[test]
+    fn test_get_settings_returns_defaults_when_empty() {
+        let db = Database::new_in_memory().unwrap();
+        let settings = db.get_settings().unwrap();
+        let defaults = AppSettings::default();
+        assert_eq!(settings.theme, defaults.theme);
+        assert_eq!(settings.min_request_interval_ms, defaults.min_request_interval_ms);
+        assert_eq!(settings.show_milliseconds, defaults.show_milliseconds);
+    }
+
+    #[test]
+    fn test_update_and_get_settings_roundtrip() {
+        let db = Database::new_in_memory().unwrap();
+        let mut settings = AppSettings::default();
+        settings.theme = "light".to_string();
+        settings.show_milliseconds = true;
+        settings.min_request_interval_ms = 2000;
+        settings.overlay_opacity = 80;
+        db.update_settings(&settings).unwrap();
+
+        let loaded = db.get_settings().unwrap();
+        assert_eq!(loaded.theme, "light");
+        assert_eq!(loaded.show_milliseconds, true);
+        assert_eq!(loaded.min_request_interval_ms, 2000);
+        assert_eq!(loaded.overlay_opacity, 80);
+    }
+
+    #[test]
+    fn test_delete_server_cascades_sync_results() {
+        let db = Database::new_in_memory().unwrap();
+        let server = db.add_server("https://example.com").unwrap();
+        let r = make_test_sync_result(server.id, 50.0, Utc::now());
+        db.save_sync_result(&r).unwrap();
+
+        // Verify result exists before delete
+        let before = db.get_sync_history(server.id, None, None).unwrap();
+        assert_eq!(before.len(), 1);
+
+        db.delete_server(server.id).unwrap();
+
+        // Server is gone; sync results should be gone too
+        // We verify by checking a fresh server gets no history and the old ID returns error
+        assert!(db.get_server(server.id).is_err());
+        // Use a raw query to confirm cascade deleted the sync_results row
+        let conn = db.conn.lock().unwrap();
+        let count: i64 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM sync_results WHERE server_id = ?1",
+                params![server.id],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert_eq!(count, 0);
+    }
+}

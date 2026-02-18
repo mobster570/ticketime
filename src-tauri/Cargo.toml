@@ -29,3 +29,6 @@ chrono = { version = "0.4", features = ["serde"] }
 rusqlite = { version = "0.33", features = ["bundled"] }
 thiserror = "2"
 tokio-util = "0.7"
+
+[dev-dependencies]
+http = "1"

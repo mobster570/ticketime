@@ -26,3 +26,61 @@ impl Serialize for AppError {
         serializer.serialize_str(&self.to_string())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // ── Display ──
+
+    #[test]
+    fn no_date_header_display() {
+        assert_eq!(AppError::NoDateHeader.to_string(), "server returned no Date header");
+    }
+
+    #[test]
+    fn invalid_date_header_display() {
+        let e = AppError::InvalidDateHeader("bad value".to_string());
+        assert_eq!(e.to_string(), "invalid Date header format: bad value");
+    }
+
+    #[test]
+    fn cancelled_display() {
+        assert_eq!(AppError::Cancelled.to_string(), "sync cancelled");
+    }
+
+    #[test]
+    fn max_retries_exceeded_display() {
+        let e = AppError::MaxRetriesExceeded(5);
+        assert_eq!(e.to_string(), "max retries exceeded (5 attempts)");
+    }
+
+    #[test]
+    fn invalid_url_display() {
+        let e = AppError::InvalidUrl("not-a-url".to_string());
+        assert_eq!(e.to_string(), "invalid URL: not-a-url");
+    }
+
+    // ── Serialize ──
+
+    #[test]
+    fn app_error_serializes_to_its_display_string() {
+        let e = AppError::NoDateHeader;
+        let json = serde_json::to_string(&e).unwrap();
+        assert_eq!(json, "\"server returned no Date header\"");
+    }
+
+    #[test]
+    fn invalid_date_header_serializes_to_display_string() {
+        let e = AppError::InvalidDateHeader("garbage".to_string());
+        let json = serde_json::to_string(&e).unwrap();
+        assert_eq!(json, "\"invalid Date header format: garbage\"");
+    }
+
+    #[test]
+    fn max_retries_exceeded_serializes_to_display_string() {
+        let e = AppError::MaxRetriesExceeded(3);
+        let json = serde_json::to_string(&e).unwrap();
+        assert_eq!(json, "\"max retries exceeded (3 attempts)\"");
+    }
+}
